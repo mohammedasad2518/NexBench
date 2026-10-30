@@ -1,0 +1,1 @@
+var e=`/assets/constructa-logo-B0FowtG-.jpeg`;export{e as t};
