@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Cpu, 
-  Layers, 
-  Zap, 
-  RotateCw, 
   Play, 
-  Radio, 
-  ArrowRight, 
-  Gauge, 
-  FileCode, 
-  Terminal, 
-  Activity,
-  ShieldCheck,
-  X
+  Pause, 
+  Volume2, 
+  VolumeX, 
+  ChevronDown, 
+  ChevronUp, 
+  Globe, 
+  X, 
+  Clock, 
+  BookOpen, 
+  BarChart, 
+  ArrowRight,
+  Gauge,
+  Radio,
+  RotateCw,
+  Terminal,
+  CheckCircle2,
+  Tv
 } from 'lucide-react';
 import { HeroScene3D } from './HeroScene3D';
 import { EXAMPLE_PROJECT_TEMPLATES } from '../utils/exampleProjects';
@@ -27,12 +32,11 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({
   onOpenWorkbench,
   onLaunchTemplate,
-  savedProjectCount,
 }) => {
-  // Announcement strip dismissal state (persisted)
+  // 1. Dismissible Top Announcement Strip
   const [showAnnouncement, setShowAnnouncement] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('hw_announcement_dismissed_v5') !== 'true';
+      return localStorage.getItem('benchtwin_announcement_dismissed') !== 'true';
     } catch {
       return true;
     }
@@ -41,23 +45,39 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   const dismissAnnouncement = () => {
     setShowAnnouncement(false);
     try {
-      localStorage.setItem('hw_announcement_dismissed_v5', 'true');
+      localStorage.setItem('benchtwin_announcement_dismissed', 'true');
     } catch {
       // ignore
     }
   };
 
-  // Sticky navbar blurred on scroll
+  // 2. Sticky Navbar state
   const [isScrolled, setIsScrolled] = useState(false);
+  const [productDropdownOpen, setProductDropdownOpen] = useState(false);
+
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Category filtering for Section 2 (Project Discovery)
+  // 3. Hero 6-Step Interactive Progression
+  const [activeStep, setActiveStep] = useState<number>(0);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+  const [isMuted, setIsMuted] = useState<boolean>(true);
+
+  // Auto-advance through the 6 hero tabs every 6 seconds when not paused
+  useEffect(() => {
+    if (isPaused) return;
+    const interval = setInterval(() => {
+      setActiveStep((prev) => (prev + 1) % 6);
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [isPaused]);
+
+  // 4. Project Discovery Category Filters
   const [selectedCategory, setSelectedCategory] = useState<'All' | 'Robotics' | 'Electronics' | 'Sensors'>('All');
   const [activeTemplateId, setActiveTemplateId] = useState<string>(EXAMPLE_PROJECT_TEMPLATES[0].id);
 
@@ -71,6 +91,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
   const activeTemplate = EXAMPLE_PROJECT_TEMPLATES.find((t) => t.id === activeTemplateId) || EXAMPLE_PROJECT_TEMPLATES[0];
 
+  // 5. Expandable Course Syllabus Accordion
+  const [expandedUnits, setExpandedUnits] = useState<Record<number, boolean>>({ 1: true });
+
+  const toggleUnit = (unitId: number) => {
+    setExpandedUnits((prev) => ({ ...prev, [unitId]: !prev[unitId] }));
+  };
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id);
     if (el) {
@@ -78,240 +105,526 @@ export const LandingPage: React.FC<LandingPageProps> = ({
     }
   };
 
+  // Hero Step Descriptions
+  const HERO_STEPS = [
+    {
+      num: 1,
+      name: 'Build',
+      desc: '9 489 real parts: boards, sensors, motors, screens...',
+    },
+    {
+      num: 2,
+      name: 'Wire',
+      desc: 'Click a pin, then another. The circuit checks tell you...',
+    },
+    {
+      num: 3,
+      name: 'Code',
+      desc: 'Arduino and ESP32 sketches, SPIKE and VEXcode...',
+    },
+    {
+      num: 4,
+      name: 'Simulate',
+      desc: 'LEDs light, motors turn, and the serial monitor talks...',
+    },
+    {
+      num: 5,
+      name: 'Design',
+      desc: 'Sketch a shape, pull it into 3D and cut its holes, the way CAD programs work. Then export it as an STL for your 3D printer.',
+    },
+    {
+      num: 6,
+      name: 'Test Bench',
+      desc: 'Drive your robot on a real field',
+    },
+  ];
+
+  const SYLLABUS_UNITS = [
+    {
+      id: 1,
+      title: 'Get around',
+      summary: 'Turn the view, find parts and put them where you want.',
+      duration: '3 lessons, 9 min',
+      lessons: [
+        'Navigating the 3D bench with Orbit and Pan controls',
+        'Browsing catalog parts: microcontrollers, motors, sensors',
+        'Precision snap placing and aligning on the 0.5m grid',
+      ],
+    },
+    {
+      id: 2,
+      title: 'Wire',
+      summary: 'Connect pins, plug parts into a breadboard and read the checks.',
+      duration: '5 lessons, 22 min',
+      lessons: [
+        'Plugging components into breadboard power and tie-point rails',
+        'Color-coded jumpers: +5V (red), GND (black), PWM (yellow)',
+        'Live circuit evaluation and continuity error checking',
+      ],
+    },
+    {
+      id: 3,
+      title: 'Code',
+      summary: 'Write real Arduino code and watch it run on the bench.',
+      duration: '7 lessons, 35 min',
+      lessons: [
+        'Anatomy of Arduino sketches: setup() and loop()',
+        'Digital outputs: pinMode(), digitalWrite(), and delay()',
+        'Serial telemetry stream and live Serial.println() monitor',
+      ],
+    },
+    {
+      id: 4,
+      title: 'More code',
+      summary: 'Several LEDs, buttons that count, a knob, and timing without delay().',
+      duration: '7 lessons, 42 min',
+      lessons: [
+        'Non-blocking event scheduling with millis() timers',
+        'Analog potentiometer inputs and analogRead() conversion',
+        'PWM analogWrite() LED fading and DC motor throttle control',
+      ],
+    },
+    {
+      id: 5,
+      title: 'Libraries',
+      summary: 'Use real Arduino libraries to read sensors and buttons, like the ones in Code ▸ Libraries.',
+      duration: '4 lessons, 25 min',
+      lessons: [
+        'Controlling micro servos with #include <Servo.h>',
+        'HC-SR04 ultrasonic distance sensing with pulseIn() timing',
+        'Attaching optical wheel encoder interrupts with attachInterrupt()',
+      ],
+    },
+    {
+      id: 6,
+      title: 'Measure',
+      summary: 'Measure the circuit like on a real lab bench.',
+      duration: '2 lessons, 11 min',
+      lessons: [
+        'Pin timeline logic waveform analysis across 5 digital channels',
+        'Virtual pin matrix monitoring: High, Low, and Analog Voltages',
+      ],
+    },
+  ];
+
   return (
-    <div className="landing-page-root">
-      {/* 1. Slim Dismissible Top Announcement Strip */}
+    <div className="benchtwin-landing-root">
+      {/* 1. Announcement Strip */}
       {showAnnouncement && (
-        <aside className="announcement-strip" role="region" aria-label="Announcement">
-          <div className="announcement-inner">
-            <span className="announcement-badge">NEW</span>
-            <span className="announcement-text">
-              Hardware Workbench 5.0 is live with closed-loop PID line-following and optical odometry.
+        <aside className="bt-announcement-strip">
+          <div className="bt-announcement-content">
+            <span className="bt-announcement-text">
+              The full version of Hardware Workbench is coming by January 1, 2027. Until then Hardware Workbench is in beta: free to use, with new features every week.
             </span>
             <button 
-              className="announcement-link" 
-              onClick={() => scrollToSection('projects')}
+              className="bt-announcement-link" 
+              onClick={() => scrollToSection('whats-new')}
             >
-              Explore verified starter templates →
+              See what&apos;s new
             </button>
             <button 
-              className="announcement-close" 
+              className="bt-announcement-close" 
               onClick={dismissAnnouncement}
               title="Dismiss announcement"
               aria-label="Dismiss announcement"
             >
-              <X size={14} />
+              <X size={15} />
             </button>
           </div>
         </aside>
       )}
 
-      {/* 2. Professional Compact Navigation Bar */}
-      <header className={`landing-nav-bar ${isScrolled ? 'scrolled' : ''}`}>
-        <div className="landing-nav-inner">
-          <div className="landing-brand-group" onClick={() => scrollToSection('hero')}>
-            <div className="brand-logo-mark">
-              <Cpu size={20} className="logo-icon-svg" />
+      {/* 2. Top Navigation Bar */}
+      <header className={`bt-navbar ${isScrolled ? 'scrolled' : ''}`}>
+        <div className="bt-navbar-inner">
+          {/* Brand Logo & Wordmark */}
+          <div className="bt-brand-cluster" onClick={() => scrollToSection('hero')}>
+            <div className="bt-logo-icon">
+              {/* BenchTwin Style Circuit Dumbbell Icon */}
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="5" cy="12" r="3" fill="#14b8a6" />
+                <circle cx="19" cy="12" r="3" fill="#14b8a6" />
+                <path d="M8 12C11 12 13 8 16 12" stroke="#14b8a6" strokeWidth="2.5" strokeLinecap="round" />
+              </svg>
             </div>
-            <div className="brand-text-block">
-              <span className="brand-title">HARDWARE WORKBENCH</span>
-              <span className="brand-sub">Robotics & Electronics CAD</span>
-            </div>
+            <span className="bt-brand-name">Hardware Workbench</span>
+            <span className="bt-beta-badge">v3.66.0 beta</span>
           </div>
 
-          <nav className="nav-links-menu" aria-label="Main Navigation">
-            <button className="nav-menu-item" onClick={() => scrollToSection('hero')}>
-              Product
+          {/* Center Navigation Links */}
+          <nav className="bt-nav-links" aria-label="Main Navigation">
+            <div 
+              className="bt-dropdown-wrap" 
+              onMouseEnter={() => setProductDropdownOpen(true)}
+              onMouseLeave={() => setProductDropdownOpen(false)}
+            >
+              <button 
+                className="bt-nav-item" 
+                onClick={() => setProductDropdownOpen(!productDropdownOpen)}
+              >
+                <span>Product</span>
+                <ChevronDown size={14} />
+              </button>
+              {productDropdownOpen && (
+                <div className="bt-dropdown-menu">
+                  <button className="bt-dropdown-item" onClick={() => { setActiveStep(0); scrollToSection('hero'); }}>
+                    <strong>1. Build</strong> <span>Assemble 3D parts & sensors</span>
+                  </button>
+                  <button className="bt-dropdown-item" onClick={() => { setActiveStep(1); scrollToSection('hero'); }}>
+                    <strong>2. Wire</strong> <span>Pin-to-pin circuit checks</span>
+                  </button>
+                  <button className="bt-dropdown-item" onClick={() => { setActiveStep(2); scrollToSection('hero'); }}>
+                    <strong>3. Code</strong> <span>Safe Arduino C++ runtime</span>
+                  </button>
+                  <button className="bt-dropdown-item" onClick={() => { setActiveStep(3); scrollToSection('hero'); }}>
+                    <strong>4. Simulate</strong> <span>LEDs, servos & radar rays</span>
+                  </button>
+                  <button className="bt-dropdown-item" onClick={() => { setActiveStep(4); scrollToSection('hero'); }}>
+                    <strong>5. Design</strong> <span>3D CAD mounts & STL export</span>
+                  </button>
+                  <button className="bt-dropdown-item" onClick={() => { setActiveStep(5); scrollToSection('hero'); }}>
+                    <strong>6. Test Bench</strong> <span>Drive robot on floor arena</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <button className="bt-nav-item" onClick={() => scrollToSection('course')}>
+              Course
             </button>
-            <button className="nav-menu-item" onClick={() => scrollToSection('projects')}>
-              Projects
+            <button className="bt-nav-item" onClick={() => scrollToSection('projects')}>
+              Gallery
             </button>
-            <button className="nav-menu-item" onClick={() => scrollToSection('features')}>
+            <button className="bt-nav-item" onClick={() => scrollToSection('features')}>
               Features
             </button>
-            <button className="nav-menu-item" onClick={() => scrollToSection('workflow')}>
-              Workflow
+            <button className="bt-nav-item" onClick={() => scrollToSection('whats-new')}>
+              What&apos;s new
             </button>
-            <button className="nav-menu-item" onClick={() => scrollToSection('docs')}>
-              Documentation
+            <button className="bt-nav-item" onClick={() => scrollToSection('about')}>
+              About
             </button>
           </nav>
 
-          <div className="nav-actions-group">
+          {/* Right Action Icons & Buttons */}
+          <div className="bt-nav-actions">
+            <div className="bt-social-icons">
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="bt-social-btn" title="YouTube">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                </svg>
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="bt-social-btn" title="Instagram">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                </svg>
+              </a>
+              <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="bt-social-btn" title="TikTok">
+                <Tv size={16} />
+              </a>
+            </div>
+
+            <div className="bt-lang-selector">
+              <Globe size={15} />
+              <span>English</span>
+              <ChevronDown size={13} />
+            </div>
+
+            <button className="bt-btn-login" onClick={onOpenWorkbench}>
+              Log in
+            </button>
+
             <button 
-              className="btn-teal-primary" 
+              className="bt-btn-start-building" 
               onClick={onOpenWorkbench}
-              id="nav-start-building-btn"
+              id="nav-start-building-cta"
             >
-              <span>Start Building</span>
-              <ArrowRight size={15} />
+              Start building
             </button>
           </div>
         </div>
       </header>
 
-      {/* 3. Section 1 — Cinematic Hero (Screenshot 1 Target) */}
-      <section className="cinematic-hero-section" id="hero">
-        <div className="hero-grid-background" />
+      {/* 3. Hero Section (Exact 3-Line Headline & 3D Interactive Bench) */}
+      <section className="bt-hero-section" id="hero">
+        <div className="bt-hero-grid-bg" />
 
-        <div className="hero-content-container">
-          {/* Left Column: Oversized Typography & CTAs */}
-          <div className="hero-left-column">
-            <div className="hero-tag-badge">
-              <span className="live-dot" />
-              <span>BROWSER-BASED ROBOTICS & ELECTRONICS</span>
-            </div>
-
-            <h1 className="hero-giant-headline">
-              Build it.<br />
-              Wire it.<br />
-              <span className="text-gradient-cyan">Bring it to life.</span>
+        <div className="bt-hero-container">
+          {/* Left Column: Headline, Copy & CTAs */}
+          <div className="bt-hero-left">
+            <h1 className="bt-hero-headline">
+              Build it<br />
+              before<br />
+              you buy it.
             </h1>
 
-            <p className="hero-lead-description">
-              Design electronics, connect virtual components, write Arduino-style code,
-              and simulate robotic systems in an interactive 3D workbench.
+            <p className="bt-hero-subtext">
+              Put real parts on a 3D bench, wire them pin to pin, write the code and watch it run.
+              Design your own parts, then drive your robot on a competition field, right in your browser.
             </p>
 
-            <div className="hero-cta-actions">
+            <div className="bt-hero-btn-row">
               <button 
-                className="btn-hero-teal" 
+                className="bt-btn-hero-primary" 
                 onClick={onOpenWorkbench}
-                id="hero-start-building-cta"
+                id="hero-start-building-btn"
               >
-                <span>Start Building</span>
-                <ArrowRight size={16} />
+                Start building
               </button>
               <button 
-                className="btn-hero-outlined" 
-                onClick={() => scrollToSection('projects')}
-                id="hero-explore-projects-cta"
+                className="bt-btn-hero-secondary" 
+                onClick={onOpenWorkbench}
+                id="hero-login-btn"
               >
-                <span>Explore Projects</span>
+                Log in
               </button>
-            </div>
-
-            {/* Quick Metrics */}
-            <div className="hero-metrics-strip">
-              <div className="metric-cell">
-                <span className="metric-number">11+</span>
-                <span className="metric-label">3D Components</span>
-              </div>
-              <div className="metric-divider" />
-              <div className="metric-cell">
-                <span className="metric-number">60 FPS</span>
-                <span className="metric-label">Kinematics</span>
-              </div>
-              <div className="metric-divider" />
-              <div className="metric-cell">
-                <span className="metric-number">100%</span>
-                <span className="metric-label">Safe AST C++</span>
-              </div>
-              {savedProjectCount > 0 && (
-                <>
-                  <div className="metric-divider" />
-                  <div className="metric-cell">
-                    <span className="metric-number">{savedProjectCount}</span>
-                    <span className="metric-label">Saved Projects</span>
-                  </div>
-                </>
-              )}
             </div>
           </div>
 
-          {/* Right Column: Live 3D Electronics Scene */}
-          <div className="hero-right-column">
-            <div className="hero-scene-frame">
-              <HeroScene3D />
-              <div className="scene-overlay-tags">
-                <span className="overlay-tag"><Cpu size={12} /> Arduino Uno R3</span>
-                <span className="overlay-tag"><Radio size={12} /> HC-SR04 Sonar</span>
-                <span className="overlay-tag"><Zap size={12} /> Live Jumper Netlist</span>
-              </div>
-            </div>
+          {/* Right Column: Interactive 3D Bench Scene */}
+          <div className="bt-hero-right">
+            <HeroScene3D activeStep={activeStep} isPaused={isPaused} />
           </div>
         </div>
 
-        {/* Hero Bottom: Horizontal Capability Workflow Strip */}
-        <div className="hero-capability-strip">
-          <div className="capability-pill">
-            <Layers size={15} className="cap-icon" />
-            <span>3D Assembly</span>
+        {/* Hero Bottom: Interactive 6-Step Strip with Play/Pause & Sound */}
+        <div className="bt-hero-steps-bar">
+          <div className="bt-steps-track">
+            {HERO_STEPS.map((step, idx) => {
+              const isActive = activeStep === idx;
+              return (
+                <button
+                  key={step.num}
+                  className={`bt-step-card ${isActive ? 'active' : ''}`}
+                  onClick={() => setActiveStep(idx)}
+                  id={`hero-step-tab-${step.num}`}
+                >
+                  <div className="bt-step-badge">
+                    <span className="bt-step-num">{step.num}</span>
+                    <span className="bt-step-name">{step.name}</span>
+                  </div>
+                  <p className="bt-step-desc">{step.desc}</p>
+                </button>
+              );
+            })}
           </div>
-          <div className="capability-pill">
-            <Zap size={15} className="cap-icon" />
-            <span>Pin-to-Pin Wiring</span>
-          </div>
-          <div className="capability-pill">
-            <FileCode size={15} className="cap-icon" />
-            <span>Arduino C++ AST</span>
-          </div>
-          <div className="capability-pill">
-            <RotateCw size={15} className="cap-icon" />
-            <span>Robot Kinematics</span>
-          </div>
-          <div className="capability-pill">
-            <Radio size={15} className="cap-icon" />
-            <span>Ultrasonic Radar</span>
-          </div>
-          <div className="capability-pill">
-            <Gauge size={15} className="cap-icon" />
-            <span>Closed-Loop PID</span>
+
+          {/* Strip Control Buttons (Play/Pause & Sound) */}
+          <div className="bt-strip-controls">
+            <button 
+              className="bt-control-btn" 
+              onClick={() => setIsPaused(!isPaused)}
+              title={isPaused ? 'Resume auto-play' : 'Pause'}
+              aria-label={isPaused ? 'Play' : 'Pause'}
+            >
+              {isPaused ? <Play size={15} /> : <Pause size={15} />}
+            </button>
+            <button 
+              className="bt-control-btn" 
+              onClick={() => setIsMuted(!isMuted)}
+              title={isMuted ? 'Unmute' : 'Mute'}
+              aria-label={isMuted ? 'Unmute' : 'Mute'}
+            >
+              {isMuted ? <VolumeX size={15} /> : <Volume2 size={15} />}
+            </button>
           </div>
         </div>
       </section>
 
-      {/* 4. Section 2 — Start from a Project (Screenshot 2 Target: Light Section) */}
-      <section className="light-projects-section" id="projects">
-        <div className="projects-section-container">
-          {/* Left Column: Heading, Category Filters, and Featured Project Card */}
-          <div className="projects-left-column">
-            <div className="section-label-light">PROJECT DISCOVERY</div>
-            <h2 className="projects-editorial-title">Start with a project</h2>
-            <p className="projects-editorial-sub">
-              Open any pre-wired robotics template to test immediately or customize in the
+      {/* 4. Section 2: "Made for makers, robotics teams and classrooms" (Dark Section) */}
+      <section className="bt-dark-features-section" id="features">
+        <div className="bt-features-container">
+          <div className="bt-features-header">
+            <h2 className="bt-features-title">
+              Made for makers,<br />
+              robotics teams<br />
+              and classrooms
+            </h2>
+            <p className="bt-features-subtitle">
+              Real electronics and real robot code, without waiting for parts or worrying about breaking them.
+            </p>
+          </div>
+
+          <div className="bt-features-split-grid">
+            {/* Left Column: Realistic Workbench CAD Application Preview */}
+            <div className="bt-workbench-showcase-column">
+              <div className="bt-cad-window-card" onClick={onOpenWorkbench}>
+                <div className="bt-cad-titlebar">
+                  <div className="bt-cad-dots">
+                    <span className="dot red" />
+                    <span className="dot yellow" />
+                    <span className="dot green" />
+                  </div>
+                  <span className="bt-cad-window-title">Hardware Workbench • Robot car that avoids obstacles</span>
+                  <span className="bt-cad-beta-tag">BETA</span>
+                </div>
+
+                {/* Simulated Multi-Panel CAD Interface */}
+                <div className="bt-cad-ui-preview">
+                  <div className="bt-cad-substrip">
+                    <span>File ▾</span>
+                    <span>3D bench ▾</span>
+                    <span className="bt-tag-teal">Translate [W]</span>
+                    <span>Rotate [E]</span>
+                    <span>Top-ortho</span>
+                    <span>Front</span>
+                    <span>Right</span>
+                  </div>
+
+                  <div className="bt-cad-workspace-split">
+                    {/* Left Catalog Column */}
+                    <div className="bt-cad-preview-left">
+                      <div className="bt-mini-header">PARTS CATALOG</div>
+                      <div className="bt-mini-part">Arduino Uno R3</div>
+                      <div className="bt-mini-part">HC-SR04 Sonar</div>
+                      <div className="bt-mini-part">Micro Servo 9g</div>
+                      <div className="bt-mini-part">DC Motors & Wheels</div>
+                    </div>
+
+                    {/* Center 3D Viewport View */}
+                    <div className="bt-cad-preview-center">
+                      <div className="bt-mini-robot-graphic">
+                        <div className="robot-chassis-box" />
+                        <div className="robot-wheel-left" />
+                        <div className="robot-wheel-right" />
+                        <div className="robot-sensor-head" />
+                      </div>
+                      <div className="bt-mini-ortho-views">
+                        <div className="ortho-box">Top View</div>
+                        <div className="ortho-box">Front View</div>
+                      </div>
+                    </div>
+
+                    {/* Right Properties Column */}
+                    <div className="bt-cad-preview-right">
+                      <div className="bt-mini-header">PROPERTIES</div>
+                      <div className="bt-mini-stat">X: 0.00 Y: 0.50 Z: 0.00</div>
+                      <div className="bt-mini-stat">Pins: D9, D11, D12</div>
+                      <div className="bt-mini-stat status-ok">Circuit: Continuity OK</div>
+                    </div>
+                  </div>
+
+                  <div className="bt-cad-bottom-dock">
+                    <span className="dock-label"><Terminal size={12} /> Arduino sketch: obstacle_avoidance.ino</span>
+                    <span className="dock-status">Running • 60 FPS</span>
+                  </div>
+                </div>
+              </div>
+
+              <p className="bt-cad-caption">
+                Parts on the left, your bench in the middle, checks and properties on the right.
+                Split any area, like in Blender, to add Top, Front and Right views, the schematic or the serial monitor.
+              </p>
+            </div>
+
+            {/* Right Column: 2-Column, 6-Card Feature Grid */}
+            <div className="bt-features-cards-grid">
+              <div className="bt-feature-card">
+                <h3 className="bt-feature-title">Mistakes cost nothing</h3>
+                <p className="bt-feature-body">
+                  Wire it wrong, short a battery or burn an LED with Safety mode off.
+                  Nothing breaks for real, and the checks explain what happened.
+                </p>
+              </div>
+
+              <div className="bt-feature-card">
+                <h3 className="bt-feature-title">Real parts, real sizes</h3>
+                <p className="bt-feature-body">
+                  Boards, sensors and robot kits from real catalogs, with their pins where the real ones are,
+                  so what you build is what you buy.
+                </p>
+              </div>
+
+              <div className="bt-feature-card">
+                <h3 className="bt-feature-title">Your team&apos;s real code</h3>
+                <p className="bt-feature-body">
+                  SPIKE and VEXcode Python, FTC and FRC Java: press Run and watch your autonomous
+                  drive on its real field, with encoders, sensors and the real time limit.
+                </p>
+                <button 
+                  className="bt-link-underlined" 
+                  onClick={() => scrollToSection('projects')}
+                >
+                  Open the robot gallery →
+                </button>
+              </div>
+
+              <div className="bt-feature-card">
+                <h3 className="bt-feature-title">Lab tools</h3>
+                <p className="bt-feature-body">
+                  A multimeter, an oscilloscope and a pin timeline measure the circuit while it runs.
+                </p>
+              </div>
+
+              <div className="bt-feature-card">
+                <h3 className="bt-feature-title">Ready for the classroom</h3>
+                <p className="bt-feature-body">
+                  Nothing to install: it runs in the browser, on Chromebooks too.
+                  Lessons check every step, in six languages.
+                </p>
+              </div>
+
+              <div className="bt-feature-card">
+                <h3 className="bt-feature-title">Exports engineers use</h3>
+                <p className="bt-feature-body">
+                  A KiCad board and netlist, a parts list to buy from, STL files for printing and the Arduino code.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Section 3: Project Discovery & Starter Gallery (Light Section) */}
+      <section className="bt-light-projects-section" id="projects">
+        <div className="bt-projects-container">
+          <div className="bt-projects-header">
+            <span className="bt-section-kicker">PROJECT DISCOVERY</span>
+            <h2 className="bt-projects-title">Start with a project</h2>
+            <p className="bt-projects-sub">
+              Open any pre-wired robotics blueprint to test immediately or customize in the
               3D workbench. All components, circuits, and sketches are included.
             </p>
 
             {/* Category Filter Pills */}
-            <div className="category-filter-pills" role="tablist" aria-label="Project Categories">
+            <div className="bt-category-pills">
               {(['All', 'Robotics', 'Electronics', 'Sensors'] as const).map((cat) => (
                 <button
                   key={cat}
-                  role="tab"
-                  aria-selected={selectedCategory === cat}
-                  className={`category-pill ${selectedCategory === cat ? 'active' : ''}`}
+                  className={`bt-pill-btn ${selectedCategory === cat ? 'active' : ''}`}
                   onClick={() => setSelectedCategory(cat)}
                 >
                   {cat}
                 </button>
               ))}
             </div>
+          </div>
 
-            {/* Featured Project Showcase Card */}
-            <div className="featured-project-card">
-              <div className="featured-card-header">
-                <span className="featured-tag">FEATURED BLUEPRINT</span>
-                <span className="featured-difficulty-badge">{activeTemplate.thumbnailBadge}</span>
+          <div className="bt-projects-layout">
+            {/* Left: Featured Blueprint Card */}
+            <div className="bt-featured-project-card">
+              <div className="bt-featured-badge-row">
+                <span className="bt-featured-tag">FEATURED BLUEPRINT</span>
+                <span className="bt-difficulty-chip">{activeTemplate.thumbnailBadge}</span>
               </div>
 
-              <div className="featured-card-visual">
-                <div className="featured-visual-icon">
-                  {activeTemplate.id.includes('follower') ? (
-                    <Gauge size={48} style={{ color: '#0ea5e9' }} />
-                  ) : activeTemplate.id.includes('radar') ? (
-                    <Radio size={48} style={{ color: '#0ea5e9' }} />
-                  ) : (
-                    <RotateCw size={48} style={{ color: '#0ea5e9' }} />
-                  )}
-                </div>
-                <div className="featured-visual-details">
-                  <h3 className="featured-project-title">{activeTemplate.title}</h3>
-                  <p className="featured-project-desc">{activeTemplate.description}</p>
+              <div className="bt-featured-visual">
+                {activeTemplate.id.includes('follower') ? (
+                  <Gauge size={54} color="#0ea5e9" />
+                ) : activeTemplate.id.includes('radar') ? (
+                  <Radio size={54} color="#0ea5e9" />
+                ) : (
+                  <RotateCw size={54} color="#0ea5e9" />
+                )}
+                <div className="bt-featured-info">
+                  <h3 className="bt-featured-title">{activeTemplate.title}</h3>
+                  <p className="bt-featured-desc">{activeTemplate.description}</p>
                 </div>
               </div>
 
-              <div className="featured-specs-row">
+              <div className="bt-featured-specs">
                 <div className="spec-item">
                   <span className="spec-val">{activeTemplate.config.components.length}</span>
                   <span className="spec-lbl">Parts</span>
@@ -327,7 +640,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
 
               <button 
-                className="btn-featured-launch"
+                className="bt-btn-launch-featured" 
                 onClick={() => onLaunchTemplate(activeTemplate.config)}
                 id={`launch-featured-${activeTemplate.id}`}
               >
@@ -335,50 +648,47 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <ArrowRight size={16} />
               </button>
             </div>
-          </div>
 
-          {/* Right Column: Structured Project List */}
-          <div className="projects-right-column">
-            <div className="projects-list-header">
-              <span>AVAILABLE BLUEPRINTS ({filteredTemplates.length})</span>
-            </div>
+            {/* Right: Available Blueprints List */}
+            <div className="bt-projects-list-wrap">
+              <div className="bt-list-title">
+                AVAILABLE BLUEPRINTS ({filteredTemplates.length})
+              </div>
 
-            <div className="projects-list-grid">
-              {filteredTemplates.map((tmpl) => {
-                const isSelected = tmpl.id === activeTemplateId;
-                return (
-                  <div 
-                    key={tmpl.id}
-                    className={`project-row-card ${isSelected ? 'selected' : ''}`}
-                    onClick={() => setActiveTemplateId(tmpl.id)}
-                  >
-                    <div className="row-card-icon-box">
-                      {tmpl.id.includes('follower') ? (
-                        <Gauge size={22} />
-                      ) : tmpl.id.includes('radar') ? (
-                        <Radio size={22} />
-                      ) : (
-                        <RotateCw size={22} />
-                      )}
-                    </div>
-
-                    <div className="row-card-content">
-                      <div className="row-card-title-row">
-                        <h4 className="row-card-title">{tmpl.title}</h4>
-                        <span className="row-difficulty-tag">{tmpl.thumbnailBadge}</span>
+              <div className="bt-projects-list">
+                {filteredTemplates.map((tmpl) => {
+                  const isSelected = tmpl.id === activeTemplateId;
+                  return (
+                    <div 
+                      key={tmpl.id}
+                      className={`bt-project-row ${isSelected ? 'selected' : ''}`}
+                      onClick={() => setActiveTemplateId(tmpl.id)}
+                    >
+                      <div className="bt-row-icon">
+                        {tmpl.id.includes('follower') ? (
+                          <Gauge size={22} />
+                        ) : tmpl.id.includes('radar') ? (
+                          <Radio size={22} />
+                        ) : (
+                          <RotateCw size={22} />
+                        )}
                       </div>
-                      <p className="row-card-desc">{tmpl.description}</p>
 
-                      <div className="row-card-meta">
-                        <span className="meta-chip">Arduino Uno R3</span>
-                        <span className="meta-chip">{tmpl.config.components.length} Components</span>
-                        <span className="meta-chip">{tmpl.config.wires?.length || 0} Wires</span>
+                      <div className="bt-row-content">
+                        <div className="bt-row-title-bar">
+                          <h4 className="bt-row-title">{tmpl.title}</h4>
+                          <span className="bt-row-badge">{tmpl.thumbnailBadge}</span>
+                        </div>
+                        <p className="bt-row-desc">{tmpl.description}</p>
+                        <div className="bt-row-tags">
+                          <span>Arduino Uno R3</span>
+                          <span>{tmpl.config.components.length} Parts</span>
+                          <span>{tmpl.config.wires?.length || 0} Wires</span>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="row-card-action">
                       <button 
-                        className="btn-row-open"
+                        className="bt-btn-row-open"
                         onClick={(e) => {
                           e.stopPropagation();
                           onLaunchTemplate(tmpl.config);
@@ -386,10 +696,104 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                         title={`Open ${tmpl.title}`}
                         id={`launch-row-${tmpl.id}`}
                       >
-                        <Play size={14} />
+                        <Play size={13} />
                         <span>Open</span>
                       </button>
                     </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Section 4: Course & Syllabus Section (Light Section) */}
+      <section className="bt-course-section" id="course">
+        <div className="bt-course-container">
+          {/* Header Card */}
+          <div className="bt-course-intro-card">
+            <div className="bt-course-intro-left">
+              <button className="bt-btn-start-course" onClick={onOpenWorkbench}>
+                Start the course
+              </button>
+              <span className="bt-course-subtitle">42 hands-on lessons, about 3.5 hours in all</span>
+            </div>
+
+            <div className="bt-course-intro-right">
+              <span className="bt-saved-badge">
+                <CheckCircle2 size={14} color="#10b981" />
+                <span>Your progress is saved in this browser</span>
+              </span>
+            </div>
+          </div>
+
+          {/* Course Metadata Bar */}
+          <div className="bt-course-metrics-bar">
+            <div className="metric-cell">
+              <BarChart size={20} className="metric-icon" />
+              <div className="metric-text">
+                <span className="lbl">Skill level</span>
+                <span className="val">Beginner</span>
+              </div>
+            </div>
+            <div className="metric-cell">
+              <Clock size={20} className="metric-icon" />
+              <div className="metric-text">
+                <span className="lbl">Time to complete</span>
+                <span className="val">About 3.5 hours</span>
+              </div>
+            </div>
+            <div className="metric-cell">
+              <BookOpen size={20} className="metric-icon" />
+              <div className="metric-text">
+                <span className="lbl">Prerequisites</span>
+                <span className="val">None</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Syllabus Accordion Box */}
+          <div className="bt-syllabus-box">
+            <div className="bt-syllabus-header">
+              <h3 className="bt-syllabus-title">Syllabus</h3>
+              <span className="bt-syllabus-stats">10 units, 42 lessons, 42 quizzes</span>
+            </div>
+
+            <div className="bt-syllabus-list">
+              {SYLLABUS_UNITS.map((unit) => {
+                const isOpen = !!expandedUnits[unit.id];
+                return (
+                  <div key={unit.id} className="bt-syllabus-item">
+                    <div 
+                      className="bt-unit-summary-row" 
+                      onClick={() => toggleUnit(unit.id)}
+                    >
+                      <div className="bt-unit-left">
+                        <span className="bt-unit-number">{unit.id}</span>
+                        <div className="bt-unit-info">
+                          <h4 className="bt-unit-title">{unit.title}</h4>
+                          <p className="bt-unit-summary">{unit.summary}</p>
+                        </div>
+                      </div>
+                      <div className="bt-unit-right">
+                        <span className="bt-unit-duration">{unit.duration}</span>
+                        {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      </div>
+                    </div>
+
+                    {isOpen && (
+                      <div className="bt-unit-lessons-expanded">
+                        <ul>
+                          {unit.lessons.map((lesson, idx) => (
+                            <li key={idx}>
+                              <span className="lesson-dot" />
+                              <span>{lesson}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -398,293 +802,208 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* 5. Section 3 — Product Features (Screenshot 3 Target: Dark Technical Storytelling) */}
-      <section className="dark-features-section" id="features">
-        <div className="features-section-container">
-          <div className="features-editorial-header">
-            <div className="features-left-headline">
-              <span className="features-kicker">ENGINEERING CAPABILITIES</span>
-              <h2 className="features-main-title">
-                Engineered for real hardware simulation.
-              </h2>
-            </div>
-            <div className="features-right-copy">
-              <p className="features-lead-text">
-                Everything in Hardware Workbench operates with physical realism: terminal connectivity,
-                safe deterministic AST code execution, optical odometry interrupts, and conical raycasting.
-              </p>
-            </div>
+      {/* 7. Section 5: "What's new" Section (Light Section) */}
+      <section className="bt-whats-new-section" id="whats-new">
+        <div className="bt-whats-new-container">
+          <div className="bt-section-heading-row">
+            <h2 className="bt-editorial-heading">What&apos;s new</h2>
+            <button className="bt-link-header" onClick={onOpenWorkbench}>
+              All release notes
+            </button>
           </div>
 
-          {/* Substantial Workbench Application Preview Showcase */}
-          <div className="workbench-preview-showcase">
-            <div className="preview-cad-header">
-              <div className="cad-window-controls">
-                <span className="w-ctrl red" />
-                <span className="w-ctrl yellow" />
-                <span className="w-ctrl green" />
+          <div className="bt-release-table">
+            {/* Version 3.66.0 */}
+            <div className="bt-release-row">
+              <div className="release-col-version">
+                <span className="version-number">3.66.0</span>
               </div>
-              <div className="cad-project-name">
-                <FileCode size={13} style={{ color: '#0ea5e9' }} />
-                <span>PID Line Follower Rover • 3D Engineering Workbench</span>
+              <div className="release-col-title">
+                <h4 className="release-title">Where are you?</h4>
+                <span className="release-tag">New in this version</span>
               </div>
-              <div className="cad-runtime-badge">
-                <span className="live-pulse-dot" />
-                <span>60 FPS DETERMINISTIC SIMULATION</span>
-              </div>
-            </div>
-
-            {/* Viewport Frame with Simulated Multi-Panel UI */}
-            <div className="cad-ui-mockup-frame">
-              {/* Top Viewport Secondary Strip Mock */}
-              <div className="mock-viewport-strip">
-                <div className="strip-left-items">
-                  <span className="strip-item active">Translate [W]</span>
-                  <span className="strip-item">Rotate [E]</span>
-                  <span className="strip-item">Grid: 0.5u</span>
-                  <span className="strip-item">Track: Oval Loop</span>
-                </div>
-                <div className="strip-right-items">
-                  <span className="strip-item">Perspective</span>
-                  <span className="strip-item">Top [Y]</span>
-                  <span className="strip-item">Front [Z]</span>
-                </div>
-              </div>
-
-              {/* Center Canvas Area with Telemetry HUD */}
-              <div className="mock-scene-center">
-                <div className="mock-grid-pattern" />
-                <div className="mock-hud-overlay">
-                  <div className="hud-title"><Activity size={12} /> Telemetry HUD</div>
-                  <div className="hud-metric-row">Pose: <strong>(0.00, 1.45)</strong> | Speed: <strong style={{ color: '#10b981' }}>22.4 cm/s</strong></div>
-                  <div className="hud-metric-row">Left IR: <strong style={{ color: '#ef4444' }}>● BLACK</strong> | Right IR: <strong style={{ color: '#10b981' }}>○ WHITE</strong></div>
-                  <div className="hud-metric-row">Sonar: <strong style={{ color: '#38bdf8' }}>68 cm</strong> | Ticks: <strong style={{ color: '#a78bfa' }}>L:42 R:42</strong></div>
-                </div>
-
-                {/* Bottom Dock Mock */}
-                <div className="mock-dock-bar">
-                  <div className="mock-dock-tabs">
-                    <span className="dock-tab-btn active"><Terminal size={12} /> Arduino Code: line_follower.ino</span>
-                    <span className="dock-tab-btn"><Activity size={12} /> Serial Monitor</span>
-                    <span className="dock-tab-btn"><ShieldCheck size={12} /> Circuit Diagnostics: Clean</span>
-                  </div>
-                  <div className="mock-dock-code">
-                    <code>float error = sensorLeft - sensorRight;</code>
-                    <code>float correction = (Kp * error) + (Kd * derivative);</code>
-                    <code>analogWrite(PIN_LEFT, constrain(baseSpeed + correction, 0, 255));</code>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Structured 6-Pillar Feature Grid */}
-          <div className="features-structured-grid">
-            <div className="feature-grid-card">
-              <div className="feature-card-icon" style={{ color: '#0ea5e9' }}>
-                <Layers size={22} />
-              </div>
-              <h3 className="feature-card-title">3D Spatial Assembly</h3>
-              <p className="feature-card-text">
-                Modular 2WD chassis with mounting points, wheel axles, servo steering towers,
-                and forward sensor arrays with full hierarchical transform propagation.
-              </p>
-            </div>
-
-            <div className="feature-grid-card">
-              <div className="feature-card-icon" style={{ color: '#10b981' }}>
-                <Zap size={22} />
-              </div>
-              <h3 className="feature-card-title">Virtual Circuit Wiring</h3>
-              <p className="feature-card-text">
-                Point-and-click terminal wiring with auto-routing jumpers. Live netlist continuity
-                checks detect open circuits, missing grounds, and invalid pin allocations.
-              </p>
-            </div>
-
-            <div className="feature-grid-card">
-              <div className="feature-card-icon" style={{ color: '#f59e0b' }}>
-                <FileCode size={22} />
-              </div>
-              <h3 className="feature-card-title">Safe Arduino C++ AST</h3>
-              <p className="feature-card-text">
-                In-browser AST interpreter executes setup() and loop() with millis(), hardware
-                external interrupts (INT0/INT1), PWM analogWrite, and Servo.h library support.
-              </p>
-            </div>
-
-            <div className="feature-grid-card">
-              <div className="feature-card-icon" style={{ color: '#8b5cf6' }}>
-                <RotateCw size={22} />
-              </div>
-              <h3 className="feature-card-title">Kinematics & Odometry</h3>
-              <p className="feature-card-text">
-                Sub-stepped differential-drive kinematics, 20-slot optical wheel encoders,
-                and dead-reckoning odometry calculate distance and heading at 60 FPS.
-              </p>
-            </div>
-
-            <div className="feature-grid-card">
-              <div className="feature-card-icon" style={{ color: '#38bdf8' }}>
-                <Radio size={22} />
-              </div>
-              <h3 className="feature-card-title">Conical Radar Raycasting</h3>
-              <p className="feature-card-text">
-                Realistic HC-SR04 ultrasonic multi-ray conical sensing detects obstacles,
-                measures distances, and supports 180° servo radar scanning.
-              </p>
-            </div>
-
-            <div className="feature-grid-card">
-              <div className="feature-card-icon" style={{ color: '#ec4899' }}>
-                <Gauge size={22} />
-              </div>
-              <h3 className="feature-card-title">PID Line Following</h3>
-              <p className="feature-card-text">
-                Dual TCRT5000 IR reflectance sensors sample mathematical floor track surfaces
-                with proportional, integral, and derivative steering correction.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. Section 4 — How It Works (Workflow Strip) */}
-      <section className="workflow-section" id="workflow">
-        <div className="workflow-container">
-          <div className="workflow-header-block">
-            <span className="workflow-kicker">ENGINEERING WORKFLOW</span>
-            <h2 className="workflow-title">From Concept to Simulation in Six Steps</h2>
-          </div>
-
-          <div className="workflow-steps-strip">
-            <div className="workflow-step-item">
-              <div className="step-num">01</div>
-              <div className="step-content">
-                <h4 className="step-title">Build</h4>
-                <p className="step-desc">Assemble chassis, motors, wheels, and sensors in the 3D viewport.</p>
+              <div className="release-col-desc">
+                <p>
+                  Making an account now asks which country or territory you&apos;re in, from a list you can search
+                  (every country and territory, or &quot;Prefer not to say&quot;).
+                </p>
               </div>
             </div>
 
-            <div className="workflow-step-item">
-              <div className="step-num">02</div>
-              <div className="step-content">
-                <h4 className="step-title">Wire</h4>
-                <p className="step-desc">Connect terminals to Arduino pins with color-coded virtual jumpers.</p>
+            {/* Version 3.37 */}
+            <div className="bt-release-row">
+              <div className="release-col-version">
+                <span className="version-number">3.37</span>
+              </div>
+              <div className="release-col-title">
+                <h4 className="release-title">Your ESP32 on the Blynk app, and wires that act like wire</h4>
+                <span className="release-tag">Major update</span>
+              </div>
+              <div className="release-col-desc">
+                <p>
+                  The most advanced things Hardware Workbench learned in the last few updates:
+                  the Internet of Things, real cable physics, and the libraries you would really use.
+                </p>
               </div>
             </div>
 
-            <div className="workflow-step-item">
-              <div className="step-num">03</div>
-              <div className="step-content">
-                <h4 className="step-title">Code</h4>
-                <p className="step-desc">Write Arduino C++ sketches or load verified presets in the editor.</p>
+            {/* 2027 Beta Roadmap */}
+            <div className="bt-release-row">
+              <div className="release-col-version">
+                <span className="version-number">2027</span>
+              </div>
+              <div className="release-col-title">
+                <h4 className="release-title">The full version of Hardware Workbench</h4>
+                <span className="release-tag">Coming by January 1, 2027</span>
+              </div>
+              <div className="release-col-desc">
+                <p>
+                  Hardware Workbench leaves beta. Until then it&apos;s free to use while we finish it,
+                  with new features every week, and your projects carry over.
+                </p>
               </div>
             </div>
 
-            <div className="workflow-step-item">
-              <div className="step-num">04</div>
-              <div className="step-content">
-                <h4 className="step-title">Simulate</h4>
-                <p className="step-desc">Run the AST engine to drive motors, servos, and LEDs at 60 FPS.</p>
+            {/* Hardware Workbench Pro */}
+            <div className="bt-release-row">
+              <div className="release-col-version">
+                <span className="version-number">Pro</span>
               </div>
-            </div>
-
-            <div className="workflow-step-item">
-              <div className="step-num">05</div>
-              <div className="step-content">
-                <h4 className="step-title">Design</h4>
-                <p className="step-desc">Fine-tune PID constants, gear ratios, and obstacle configurations.</p>
+              <div className="release-col-title">
+                <h4 className="release-title">Hardware Workbench Pro</h4>
+                <span className="release-tag">Professional tier</span>
               </div>
-            </div>
-
-            <div className="workflow-step-item">
-              <div className="step-num">06</div>
-              <div className="step-content">
-                <h4 className="step-title">Test</h4>
-                <p className="step-desc">Inspect high-speed serial telemetry, line tracking, and odometry.</p>
+              <div className="release-col-desc">
+                <p>
+                  Professional tools on top of everything Hardware Workbench does, for designing
+                  robotics projects, collaborating with classrooms, and exporting directly to fabrication.
+                </p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 7. Section 5 — Final CTA & Technical Footer */}
-      <section className="final-cta-section" id="docs">
-        <div className="final-cta-container">
-          <div className="final-cta-card">
-            <div className="cta-icon-badge">
-              <Cpu size={32} />
-            </div>
-            <h2 className="cta-heading">Ready to build your autonomous robot?</h2>
-            <p className="cta-subheading">
-              Launch Hardware Workbench now. No cloud accounts, no installs — completely free in your browser.
+      {/* 8. Section 6: "About us" Section (Light Section) */}
+      <section className="bt-about-section" id="about">
+        <div className="bt-about-container">
+          <h2 className="bt-editorial-heading">About us</h2>
+          <div className="bt-about-content">
+            <p className="bt-about-lead">
+              Hardware Workbench was created to make it so anyone can try a circuit or a robot
+              before they have the parts, without the risk of burning out a board.
             </p>
-            <div className="cta-btn-wrap">
-              <button 
-                className="btn-cta-teal" 
-                onClick={onOpenWorkbench}
-                id="footer-launch-workbench-btn"
-              >
-                <span>Launch Hardware Workbench</span>
-                <ArrowRight size={16} />
-              </button>
-            </div>
+            <p className="bt-about-paragraph">
+              We made it so anyone can try a circuit or a robot before they have the parts,
+              without the risk of burning out a board. It&apos;s for students, makers and robotics teams,
+              and it&apos;s free while it&apos;s in beta.
+            </p>
+            <button className="bt-link-underlined" onClick={onOpenWorkbench}>
+              More about Hardware Workbench →
+            </button>
           </div>
         </div>
       </section>
 
-      {/* Engineering Footer */}
-      <footer className="technical-footer">
-        <div className="footer-inner-container">
-          <div className="footer-top-row">
-            <div className="footer-brand-column">
-              <div className="footer-brand-logo">
-                <Cpu size={18} style={{ color: '#0ea5e9' }} />
-                <span>HARDWARE WORKBENCH</span>
+      {/* 9. Section 7: Professional Dark Footer */}
+      <footer className="bt-footer">
+        <div className="bt-footer-container">
+          <div className="bt-footer-grid">
+            {/* Column 1: Brand & Social */}
+            <div className="bt-footer-col-brand">
+              <div className="bt-footer-logo-row">
+                <div className="bt-logo-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="5" cy="12" r="3" fill="#14b8a6" />
+                    <circle cx="19" cy="12" r="3" fill="#14b8a6" />
+                    <path d="M8 12C11 12 13 8 16 12" stroke="#14b8a6" strokeWidth="2.5" strokeLinecap="round" />
+                  </svg>
+                </div>
+                <span className="bt-footer-brand-title">Hardware Workbench</span>
               </div>
-              <p className="footer-tagline">
-                Browser-based electronics prototyping, physics simulation, and virtual Arduino microcontroller studio.
+              <p className="bt-footer-brand-desc">
+                Build electronics and robots before you buy them, right in your browser.
               </p>
+
+              <div className="bt-footer-socials">
+                <span className="bt-social-lbl">Follow Hardware Workbench</span>
+                <div className="bt-social-btn-group">
+                  <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="bt-social-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    <span>YouTube</span>
+                  </a>
+                  <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="bt-social-pill">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+                      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/>
+                      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/>
+                    </svg>
+                    <span>Instagram</span>
+                  </a>
+                  <a href="https://tiktok.com" target="_blank" rel="noopener noreferrer" className="bt-social-pill">
+                    <Tv size={14} /> <span>TikTok</span>
+                  </a>
+                </div>
+              </div>
+
+              <div className="bt-footer-lang">
+                <Globe size={14} />
+                <span>English</span>
+                <ChevronDown size={12} />
+              </div>
             </div>
 
-            <div className="footer-links-column">
-              <h5 className="footer-column-heading">WORKBENCH</h5>
-              <button className="footer-link-btn" onClick={onOpenWorkbench}>Open Studio</button>
-              <button className="footer-link-btn" onClick={() => scrollToSection('projects')}>Starter Templates</button>
-              <button className="footer-link-btn" onClick={() => scrollToSection('features')}>Subsystems</button>
-              <button className="footer-link-btn" onClick={() => scrollToSection('workflow')}>Workflow Guide</button>
+            {/* Column 2: Product */}
+            <div className="bt-footer-col">
+              <h5 className="bt-footer-heading">Product</h5>
+              <ul className="bt-footer-links">
+                <li><button onClick={() => { setActiveStep(0); scrollToSection('hero'); }}>Build</button></li>
+                <li><button onClick={() => { setActiveStep(1); scrollToSection('hero'); }}>Wire</button></li>
+                <li><button onClick={() => { setActiveStep(2); scrollToSection('hero'); }}>Code</button></li>
+                <li><button onClick={() => { setActiveStep(3); scrollToSection('hero'); }}>Simulate</button></li>
+                <li><button onClick={() => { setActiveStep(4); scrollToSection('hero'); }}>Design</button></li>
+                <li><button onClick={() => { setActiveStep(5); scrollToSection('hero'); }}>Test Bench</button></li>
+                <li><button onClick={onOpenWorkbench}>Desktop app</button></li>
+              </ul>
             </div>
 
-            <div className="footer-links-column">
-              <h5 className="footer-column-heading">STARTER TEMPLATES</h5>
-              <button className="footer-link-btn" onClick={() => onLaunchTemplate(EXAMPLE_PROJECT_TEMPLATES[0].config)}>
-                PID Line Follower Rover
-              </button>
-              <button className="footer-link-btn" onClick={() => onLaunchTemplate(EXAMPLE_PROJECT_TEMPLATES[1].config)}>
-                Ultrasonic Polar Radar Rover
-              </button>
-              <button className="footer-link-btn" onClick={() => onLaunchTemplate(EXAMPLE_PROJECT_TEMPLATES[2].config)}>
-                Closed-Loop Odometry Rover
-              </button>
+            {/* Column 3: Explore */}
+            <div className="bt-footer-col">
+              <h5 className="bt-footer-heading">Explore</h5>
+              <ul className="bt-footer-links">
+                <li><button onClick={() => scrollToSection('projects')}>Project gallery</button></li>
+                <li><button onClick={() => scrollToSection('projects')}>Robot gallery</button></li>
+                <li><button onClick={() => scrollToSection('whats-new')}>What&apos;s new</button></li>
+                <li><button onClick={() => scrollToSection('whats-new')}>Countdown to release</button></li>
+                <li><button onClick={onOpenWorkbench}>Log in</button></li>
+              </ul>
             </div>
 
-            <div className="footer-links-column">
-              <h5 className="footer-column-heading">KEYBOARD CONTROLS</h5>
-              <div className="footer-shortcut-item"><kbd>W</kbd> <span>Translate Gizmo</span></div>
-              <div className="footer-shortcut-item"><kbd>E</kbd> <span>Rotate Gizmo</span></div>
-              <div className="footer-shortcut-item"><kbd>R</kbd> <span>Scale Gizmo</span></div>
-              <div className="footer-shortcut-item"><kbd>F5</kbd> <span>Run Simulation</span></div>
+            {/* Column 4: Learn */}
+            <div className="bt-footer-col">
+              <h5 className="bt-footer-heading">Learn</h5>
+              <ul className="bt-footer-links">
+                <li><button onClick={() => scrollToSection('course')}>The Hardware Workbench course</button></li>
+                <li><button onClick={onOpenWorkbench}>Your first circuit</button></li>
+                <li><button onClick={onOpenWorkbench}>Tour of the app</button></li>
+                <li><button onClick={onOpenWorkbench}>Send feedback</button></li>
+                <li><button onClick={onOpenWorkbench}>Terms of Service</button></li>
+              </ul>
             </div>
           </div>
 
-          <div className="footer-bottom-row">
-            <span className="footer-copyright">
-              © 2026 Hardware Workbench Studio. Released for robotics and electronics engineering education.
+          {/* Bottom Copyright & Policy Strip */}
+          <div className="bt-footer-bottom-bar">
+            <span className="bt-footer-copy-text">
+              Hardware Workbench 3.66.0 beta. Full version by January 1, 2027. Made for students, makers and robotics teams.
             </span>
-            <div className="footer-status-pill">
-              <span className="status-indicator-green" />
-              <span>All Systems Operational • 60 FPS Engine</span>
+            <div className="bt-footer-bottom-links">
+              <button onClick={() => scrollToSection('about')}>About</button>
+              <button onClick={onOpenWorkbench}>Privacy policy</button>
+              <button onClick={onOpenWorkbench}>Terms of Service</button>
+              <button onClick={onOpenWorkbench} className="bt-btn-direct-app">Open the app directly next time</button>
             </div>
           </div>
         </div>

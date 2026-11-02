@@ -47,25 +47,32 @@ Open `http://localhost:5173/` in your browser to enter the studio.
 
 The Hardware Workbench interface is designed with a desktop-grade engineering CAD layout, dividing workflows cleanly between project exploration, 3D spatial staging, circuit inspection, and code diagnostics.
 
-### 3.1 Welcome & Landing Page (BenchTwin-Inspired Cinematic Architecture)
+### 3.1 Welcome & Landing Page (BenchTwin Visual Architecture)
 Upon opening the application, users are greeted by a commercial-grade engineering welcome portal:
-- **Top Announcement Strip:** Pale cyan alert banner highlighting the latest releases and documentation, dismissible with persistent `localStorage` status.
-- **Compact Sticky Navigation Bar:** Dark translucent backdrop with frosted glass blur upon scrolling, custom Hardware Workbench brand logo, in-page navigation anchors (`Projects`, `Features`, `Workflow`), theme switcher, and prominent teal `Start Building` CTA.
+- **Top Announcement Strip:** Pale mint alert banner (`#e5f8f5`) with dark teal text (`#0d746d`) announcing upcoming releases, dismissible with persistent `localStorage` status.
+- **Compact Navigation Bar:** Dark translucent backdrop (`rgba(11, 16, 23, 0.85)`) with `backdrop-filter: blur(16px)`, circuit dumbbell logo, `v3.66.0 beta` badge, `Product ⌄` dropdown, in-page navigation anchors (`Course`, `Gallery`, `Features`, `What's new`, `About`), social icons, language selector, `Log in`, and teal `Start building` CTA.
 - **Cinematic 3D Hero Section:** 
-  - **Left Editorial Column:** Oversized bold headline (*"Build it. Wire it. Bring it to life."*), concise technical mission statement, primary teal `Start Building` button, and outlined `Explore Projects` button.
-  - **Right 3D Electronics Assembly Scene (`HeroScene3D`):** Dedicated WebGL Three.js canvas featuring a dark perspective grid, circular pedestal, cream tie-point breadboard with power rails, Arduino Uno R3 with ATmega328P DIP IC, crystal oscillator, USB/DC jacks, HC-SR04 ultrasonic sensor with dual mesh transducers, 9g micro servo with oscillating horn, blinking/pulsing LEDs with dynamic point lighting, and 5 Catmull-Rom tube jumper wires, complete with smooth mouse parallax and idle camera drift.
-  - **Bottom Capabilities Strip:** 6 compact technical cards highlighting *3D Electronics Assembly*, *Interactive Pin Wiring*, *Arduino AST Interpreter*, *Differential Kinematics*, *Closed-Loop Sensing*, and *Full Project Persistence*.
-- **Section 2 — Light Project Discovery ("Start with a project"):**
-  - Crisp, high-contrast light section (`#f8fafc`) with editorial title and description.
-  - Functional category filter pills (*All*, *Robotics*, *Electronics*, *Sensors*).
-  - Left Featured 3D Project Preview card with badge, specifications, and instant `Launch in Workbench` launcher.
-  - Right structured interactive project list with part counts, board specs, and category tags.
-- **Section 3 — Dark Product Features Storytelling:**
-  - Deep charcoal technical backdrop (`#080c13`) with editorial typography.
-  - Substantial Workbench Application Preview showcase with live simulation HUD and code dock.
-  - 6-card feature grid detailing 3D component placement, virtual pin-to-pin wiring, Arduino C++ interpreter, live sensor & motor simulation, ultrasonic radar & TCRT5000 IR sensing, and project persistence.
-- **Section 4 — 6-Step Workflow Strip:** Horizontal step cards (*Build*, *Wire*, *Code*, *Simulate*, *Design*, *Test*) with interactive hover transitions.
-- **Section 5 — Final Launch CTA & Technical Engineering Footer:** Launch invitation card, quick links, system status, and complete keyboard shortcuts reference table.
+  - **Left Editorial Column:** Signature 3-line headline (*"Build it / before / you buy it."*), concise technical mission statement, primary teal `Start building` button, and outlined `Log in` button.
+  - **Right 3D Electronics Assembly Scene (`HeroScene3D`):** Dedicated WebGL Three.js canvas with interactive OrbitControls (`↻ Drag to turn the bench. Click a part to look closer.`), coordinate floor grid with numbers, white tie-point breadboard with red/blue power rails, Arduino Uno R3, pan-tilt servo tower with swiveling ultrasonic sensor, 0.96" OLED screen with animated radar sweeps, flashing LEDs, potentiometer knob, resistors, colorful curved jumper wires, and mobile robot in the background.
+  - **Bottom Interactive 6-Step Strip:** Horizontal tabs for *[1] Build*, *[2] Wire*, *[3] Code*, *[4] Simulate*, *[5] Design*, and *[6] Test Bench* with automatic 6-second cycling, play/pause toggle, and sound toggle.
+  - **Live Step Overlays:** Pop-up animated code card (`traffic_radar.ino`) with typing effect for Step 2 (*Code*), and live 60 FPS `Pin timeline` card with scrolling logic waveforms for Step 3 (*Simulate*).
+- **Section 2 — Dark Feature Storytelling ("Made for makers, robotics teams and classrooms"):**
+  - Deep charcoal technical backdrop (`#0b1017`) with editorial typography.
+  - Substantial Workbench CAD Application Preview showcase with multi-split viewports, parts list, and properties inspector.
+  - 2-column, 6-card feature grid (*Mistakes cost nothing*, *Real parts, real sizes*, *Your team's real code*, *Lab tools*, *Ready for the classroom*, *Exports engineers use*).
+- **Section 3 — Light Project Discovery ("Start with a project"):**
+  - Crisp, high-contrast light section (`#f8fafc`) with category filter pills (*All*, *Robotics*, *Electronics*, *Sensors*).
+  - Left Featured Blueprint card with specifications, part counts, and instant `Launch in Workbench` button.
+  - Right structured interactive project list with 1-click `Open` actions.
+- **Section 4 — Course & Syllabus:**
+  - Course intro card with progress save badge and metadata pills (Skill level: Beginner, Time: 3.5 hours, Prerequisites: None).
+  - Interactive syllabus accordion units (Get around, Wire, Code, More code, Libraries, Measure) with lesson counts and durations.
+- **Section 5 — What's new:**
+  - Release timeline table covering versions `3.66.0`, `3.37`, `2027 Roadmap`, and `Hardware Workbench Pro`.
+- **Section 6 — About us:**
+  - Platform mission statement and educational background.
+- **Section 7 — Professional Dark Technical Footer:**
+  - 4-column layout (Brand & Socials, Product, Explore, Learn), copyright, About, Privacy policy, Terms of Service, and direct app launcher.
 
 ### 3.2 Main Workbench Panel Organization
 The main workbench employs a compact, multi-panel layout inspired by modern electronics CAD platforms:

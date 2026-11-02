@@ -632,7 +632,96 @@ Following direct analysis of the reference platform ([https://benchtwin.com/](ht
 
 ---
 
-## 14. Resume Guide & Project Status Matrix
+## 15. BenchTwin Video Reference Alignment & Complete Frontend Rebuild
+
+### 15.1 Video Reference Analysis (`benchtwin_srs_(1).mp4`)
+In accordance with user-uploaded video recording `benchtwin_srs_(1).mp4` (56.4s, 1906x1024, 30 FPS), the entire frontend was systematically aligned to match the demonstrated structure, interactions, typography, and motion:
+
+1. **Dismissible Top Announcement Strip:**
+   - Soft pale mint background (`#e5f8f5`) with dark teal text (`#0d746d`).
+   - "The full version of Hardware Workbench is coming by January 1, 2027. Until then Hardware Workbench is in beta: free to use, with new features every week."
+   - Underlined link `See what's new` (smooth scrolls to `#whats-new`).
+   - Dismiss button with persistent `localStorage` status.
+
+2. **Compact Navigation Bar:**
+   - Dark translucent backdrop (`rgba(11, 16, 23, 0.85)`) with `backdrop-filter: blur(16px)`.
+   - Brand mark with green circuit icon + "Hardware Workbench" + `v3.66.0 beta` badge.
+   - Interactive `Product ⌄` dropdown menu (Build, Wire, Code, Simulate, Design, Test Bench).
+   - In-page anchors: `Course`, `Gallery`, `Features`, `What's new`, `About`.
+   - Social links: YouTube, Instagram, TikTok icons.
+   - Language selector dropdown (`English ⌄`).
+   - `Log in` secondary button + `Start building` primary teal button (`#14857b`).
+
+3. **Cinematic Hero & 3D Interactive Bench (`HeroScene3D.tsx`):**
+   - **Left Column:**
+     - 3-line bold headline:
+       ```
+       Build it
+       before
+       you buy it.
+       ```
+     - Subtitle: "Put real parts on a 3D bench, wire them pin to pin, write the code and watch it run. Design your own parts, then drive your robot on a competition field, right in your browser."
+     - Action buttons: `Start building` (teal) and `Log in` (outlined).
+   - **Right Column (3D Interactive Bench):**
+     - Full Three.js WebGL canvas with OrbitControls (drag/orbit mouse interaction).
+     - Floating tooltip in top-right: `↻ Drag to turn the bench. Click a part to look closer.`
+     - Floor coordinate grid with numbered markers (15, 20, 25, 30, 35, 40, 45).
+     - White tie-point breadboard with red/blue power rails.
+     - Arduino Uno R3 with ATmega328P DIP chip, USB/DC jacks, headers, crystal oscillator.
+     - Orange/yellow 3D bracket pan-tilt tower with micro servo and HC-SR04 sonar sensor.
+     - 0.96" OLED display screen showing live animated radar sweeps.
+     - LEDs (red, yellow, green), potentiometer knob, resistors, and colorful curved jumper wires.
+     - 2WD mobile robot in the background on the test bench track.
+   - **Hero Bottom 6-Step Strip:**
+     - `[1] Build` — "9 489 real parts: boards, sensors, motors, screens..."
+     - `[2] Wire` — "Click a pin, then another. The circuit checks tell you..."
+     - `[3] Code` — "Arduino and ESP32 sketches, SPIKE and VEXcode..."
+     - `[4] Simulate` — "LEDs light, motors turn, and the serial monitor talks..."
+     - `[5] Design` — "Sketch a shape, pull it into 3D and cut its holes, the way CAD programs work. Then export it as an STL for your 3D printer."
+     - `[6] Test Bench` — "Drive your robot on a real field"
+     - Play/Pause toggle `||` / `▶` and Sound toggle `🔊` / `🔇`.
+     - Automatic 6-second cycle with smooth camera interpolation towards target viewpoints.
+   - **Step Overlays:**
+     - In Step 2 (`Code`): Floating dark code editor card pops up over 3D scene (`traffic_radar.ino`) with syntax-highlighted typing code and blinking cursor.
+     - In Step 3 (`Simulate`): Floating `Pin timeline` card pops up over 3D scene with green pulsing `● Live` dot and a 60 FPS canvas graphing live logic waveforms for D11, D12, D13, D9 (PWM sine), and D5 (buzzer train) against `-8s`, `-6s`, `-4s`, `-2s`, `now` timestamps.
+
+4. **Section 2: Dark Feature Section ("Made for makers, robotics teams and classrooms"):**
+   - Deep charcoal background (`#0b1017`).
+   - Title: "Made for makers, robotics teams and classrooms".
+   - Subtitle: "Real electronics and real robot code, without waiting for parts or worrying about breaking them."
+   - Left: CAD multi-panel application interface preview card with Top/Front/Right ortho split views, parts list, and properties inspector, with caption.
+   - Right: 2 columns, 6 cards separated by clean top borders:
+     - `Mistakes cost nothing`
+     - `Real parts, real sizes`
+     - `Your team's real code` (with `Open the robot gallery` link)
+     - `Lab tools`
+     - `Ready for the classroom`
+     - `Exports engineers use`
+
+5. **Section 3: Project Discovery & Starter Gallery (Light Section `#f8fafc`):**
+   - Section kicker, title "Start with a project", subtitle, and category pills (`All`, `Robotics`, `Electronics`, `Sensors`).
+   - Left featured blueprint card with specifications, part counts, and direct `Launch in Workbench` button.
+   - Right structured blueprint list with instant `Open` action.
+
+6. **Section 4: Course & Syllabus Section (Light Section):**
+   - Intro card: "Start the course: 42 hands-on lessons, about 3.5 hours in all" with `Your progress is saved in this browser` badge.
+   - Metrics bar: Skill level (Beginner), Time (3.5 hours), Prerequisites (None).
+   - Expandable syllabus accordion units (1. Get around, 2. Wire, 3. Code, 4. More code, 5. Libraries, 6. Measure) with lesson counts, durations, and expanded lesson outlines.
+
+7. **Section 5: "What's new" Section (Light Section):**
+   - Title `What's new` with `All release notes` link.
+   - 4-entry release table (`3.66.0`, `3.37`, `2027`, `Pro`) with version numbers, update titles, tags, and descriptions.
+
+8. **Section 6: "About us" Section (Light Section):**
+   - Title `About us` with mission paragraph and `More about Hardware Workbench` link.
+
+9. **Section 7: Professional Dark Technical Footer:**
+   - 4-column layout: Brand & Socials (YouTube, Instagram, TikTok), Product, Explore, Learn.
+   - Bottom bar with version info, copyright, About, Privacy policy, Terms of Service, and "Open the app directly next time".
+
+10. **Application Integrity:**
+    - 100% of underlying simulation, AST Arduino runtime, 2-tier CAD toolbar, camera presets, wire routing, PID line following, ultrasonic radar, and project persistence preserved without regression.
+
 
 ### Environment & Run Instructions
 ```powershell
