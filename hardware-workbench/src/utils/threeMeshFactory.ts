@@ -1,5 +1,54 @@
 import * as THREE from 'three';
 import type { Component3D } from '../types/workbench';
+import { buildBoardMesh } from '../library/models/boardModels';
+import { buildPrototypingMesh } from '../library/models/prototypingModels';
+import { buildWireMesh } from '../library/models/wireModels';
+import { buildAccessoryMesh } from '../library/models/accessoryModels';
+
+const BOARD_TYPES = new Set([
+  'arduino',
+  'arduino_mega',
+  'arduino_nano',
+  'arduino_leonardo',
+  'esp8266_nodemcu',
+  'esp32_devkit',
+  'esp32_cam',
+  'raspberry_pi_pico',
+  'raspberry_pi_pico_w',
+  'raspberry_pi_4',
+  'stm32_blue_pill',
+]);
+
+const PROTOTYPING_TYPES = new Set([
+  'breadboard_full',
+  'breadboard_half',
+  'breadboard_mini',
+  'perfboard',
+  'stripboard',
+  'pcb_prototype',
+]);
+
+const WIRE_TYPES = new Set([
+  'wire_m2m',
+  'wire_m2f',
+  'wire_f2f',
+  'wire_solid_core',
+  'wire_multicolor',
+  'cable_ribbon',
+  'cable_usb_ab',
+  'cable_micro_usb',
+  'cable_usb_c',
+  'wire_alligator',
+]);
+
+const ACCESSORY_TYPES = new Set([
+  'header_male_40',
+  'header_female_40',
+  'terminal_block_2p',
+  'connector_jst_xh',
+  'dc_barrel_jack',
+  'breadboard_psu_module',
+]);
 
 export function createComponentMesh(component: Component3D): THREE.Group {
   const group = new THREE.Group();
@@ -30,7 +79,28 @@ export function createComponentMesh(component: Component3D): THREE.Group {
     metalness: 0.05,
   });
 
-  switch (component.type) {
+  if (BOARD_TYPES.has(component.type)) {
+    const subGroup = buildBoardMesh(component, baseMaterial, darkMaterial, metalMaterial, whiteMaterial);
+    while (subGroup.children.length > 0) {
+      group.add(subGroup.children[0]);
+    }
+  } else if (PROTOTYPING_TYPES.has(component.type)) {
+    const subGroup = buildPrototypingMesh(component, baseMaterial, darkMaterial, metalMaterial, whiteMaterial);
+    while (subGroup.children.length > 0) {
+      group.add(subGroup.children[0]);
+    }
+  } else if (WIRE_TYPES.has(component.type)) {
+    const subGroup = buildWireMesh(component, baseMaterial, darkMaterial, metalMaterial, whiteMaterial);
+    while (subGroup.children.length > 0) {
+      group.add(subGroup.children[0]);
+    }
+  } else if (ACCESSORY_TYPES.has(component.type)) {
+    const subGroup = buildAccessoryMesh(component, baseMaterial, darkMaterial, metalMaterial, whiteMaterial);
+    while (subGroup.children.length > 0) {
+      group.add(subGroup.children[0]);
+    }
+  } else {
+    switch (component.type) {
     case 'chassis': {
       // Main platform base
       const plateGeo = new THREE.BoxGeometry(4.0, 0.18, 2.8);
@@ -518,6 +588,7 @@ export function createComponentMesh(component: Component3D): THREE.Group {
       group.userData.lineSensorLedMat = outLedMat;
       break;
     }
+  }
   }
 
   // Apply initial transforms

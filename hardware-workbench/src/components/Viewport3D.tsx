@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import type { 
   Component3D, 
+  ComponentType,
   TransformMode, 
   WireConnection, 
   ActiveTerminalRef,
@@ -72,6 +73,7 @@ interface Viewport3DProps {
   gridVisible: boolean;
   onDeleteSelected: () => void;
   setTransformMode: (mode: TransformMode) => void;
+  onDropComponent?: (type: ComponentType) => void;
   // Phase 2A Wiring Props
   wires: WireConnection[];
   selectedWireId: string | null;
@@ -133,6 +135,7 @@ export const Viewport3D = ({
   gridVisible,
   onDeleteSelected,
   setTransformMode,
+  onDropComponent,
   wires,
   selectedWireId,
   onSelectWire,
@@ -1411,7 +1414,21 @@ export const Viewport3D = ({
   };
 
   return (
-    <div className="viewport-container" ref={containerRef}>
+    <div 
+      className="viewport-container" 
+      ref={containerRef}
+      onDragOver={(e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      }}
+      onDrop={(e) => {
+        e.preventDefault();
+        const type = e.dataTransfer.getData('text/plain') as ComponentType;
+        if (type && onDropComponent) {
+          onDropComponent(type);
+        }
+      }}
+    >
       {/* Top Left Camera View Presets HUD */}
       <div className="viewport-overlay-controls">
         <button className="view-preset-btn" onClick={() => setCameraView('perspective')}>

@@ -1,13 +1,12 @@
 import * as THREE from 'three';
 import type { 
   Component3D, 
-  ComponentType, 
   MountPoint, 
   MechanicalAttachment, 
   Vector3D 
 } from '../types/workbench';
 
-export const COMPONENT_MOUNT_POINTS: Record<ComponentType, MountPoint[]> = {
+export const COMPONENT_MOUNT_POINTS: Record<string, MountPoint[]> = {
   chassis: [
     {
       id: 'mount_motor_left',

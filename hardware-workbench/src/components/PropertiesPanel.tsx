@@ -20,8 +20,11 @@ import {
   Target,
   Eye,
   PanelRightClose,
-  PanelRightOpen
+  PanelRightOpen,
+  ExternalLink,
+  Info
 } from 'lucide-react';
+import { componentRegistry } from '../library/registry';
 import type { 
   Component3D, 
   WireConnection, 
@@ -521,6 +524,93 @@ export const PropertiesPanel = ({
           </span>
         </div>
       </div>
+
+      {/* Engineering Specifications & Component Metadata */}
+      {(() => {
+        const def = componentRegistry.get(selectedComponent.type);
+        if (!def) return null;
+        return (
+          <div className="prop-section" style={{ background: '#0b1120', border: '1px solid #1e293b', borderRadius: '6px' }}>
+            <div className="prop-section-title" style={{ color: '#38bdf8' }}>
+              <span>Specifications & Metadata</span>
+              <Info size={14} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', fontSize: '11px', color: '#cbd5e1' }}>
+              {def.manufacturer && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Manufacturer:</span>
+                  <span style={{ fontWeight: 500 }}>{def.manufacturer}</span>
+                </div>
+              )}
+              {def.boardFamily && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Family:</span>
+                  <span style={{ fontWeight: 500 }}>{def.boardFamily}</span>
+                </div>
+              )}
+              {def.dimensions && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Size (W×D×H):</span>
+                  <span>{def.dimensions.widthMm} × {def.dimensions.depthMm} × {def.dimensions.heightMm} mm</span>
+                </div>
+              )}
+              {def.electrical?.logicLevel && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Logic Level:</span>
+                  <span style={{ color: def.electrical.logicLevel.includes('5.0V') ? '#ef4444' : '#38bdf8', fontWeight: 600 }}>
+                    {def.electrical.logicLevel}
+                  </span>
+                </div>
+              )}
+              {def.electrical?.operatingVoltage && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Voltage:</span>
+                  <span>{def.electrical.operatingVoltage}</span>
+                </div>
+              )}
+              {def.electrical?.clockSpeedMhz && (
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: '#64748b' }}>Clock:</span>
+                  <span>{def.electrical.clockSpeedMhz} MHz</span>
+                </div>
+              )}
+              {def.electrical?.supportedInterfaces && def.electrical.supportedInterfaces.length > 0 && (
+                <div style={{ marginTop: '2px' }}>
+                  <span style={{ color: '#64748b', display: 'block', marginBottom: '2px' }}>Interfaces:</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                    {def.electrical.supportedInterfaces.map((iface) => (
+                      <span key={iface} className="spec-badge" style={{ fontSize: '8.5px' }}>{iface}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div style={{ marginTop: '6px', paddingTop: '6px', borderTop: '1px solid #1e293b', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ color: '#64748b' }}>Simulation:</span>
+                <span style={{ 
+                  color: def.simulation.level === 'full' ? '#34d399' : def.simulation.level === 'pin_mapping' ? '#38bdf8' : '#fbbf24',
+                  fontWeight: 600,
+                  fontSize: '10px'
+                }}>
+                  {def.simulation.level === 'full' ? '⚡ Full AST Simulation' : def.simulation.level === 'pin_mapping' ? '📌 Pin Telemetry' : '🔌 Basic Connectivity'}
+                </span>
+              </div>
+              {def.datasheetUrl && (
+                <div style={{ marginTop: '4px' }}>
+                  <a
+                    href={def.datasheetUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: '#38bdf8', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px' }}
+                  >
+                    <span>View Official Datasheet</span>
+                    <ExternalLink size={10} />
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Phase 4B: Virtual Hardware & Simulated Circuit Status */}
       {selectedComponent.type === 'led' && (

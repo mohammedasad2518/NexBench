@@ -1,118 +1,13 @@
 import type { ComponentCatalogItem, ComponentType } from '../types/workbench';
+import { componentRegistry } from '../library/registry';
 
-export const COMPONENT_CATALOG: ComponentCatalogItem[] = [
-  {
-    type: 'chassis',
-    name: 'Robot Chassis Plate',
-    category: 'structural',
-    description: 'Lightweight mounting platform with pre-drilled holes for motors and boards.',
-    defaultColor: '#334155',
-    defaultScale: { x: 1, y: 1, z: 1 },
-    iconName: 'Layers',
-    badge: 'Structure',
-  },
-  {
-    type: 'dc_motor',
-    name: 'BO Gear Motor',
-    category: 'actuator',
-    description: 'Dual-shaft DC gearbox motor for robot wheel drive (3V - 6V).',
-    defaultColor: '#eab308',
-    defaultScale: { x: 1, y: 1, z: 1 },
-    iconName: 'Zap',
-    badge: '3-6V DC',
-  },
-  {
-    type: 'wheel',
-    name: 'Rubber Drive Wheel',
-    category: 'actuator',
-    description: 'High-grip rubber tire with durable hub for direct motor shaft connection.',
-    defaultColor: '#1e293b',
-    defaultScale: { x: 1, y: 1, z: 1 },
-    iconName: 'CircleDot',
-    badge: '65mm Hub',
-  },
-  {
-    type: 'servo',
-    name: 'Micro Servo 9g',
-    category: 'actuator',
-    description: 'Positional 180° rotation servo for steering, arms, and pan-tilt mounts.',
-    defaultColor: '#2563eb',
-    defaultScale: { x: 1, y: 1, z: 1 },
-    iconName: 'Cpu',
-    badge: '180° PWM',
-  },
-  {
-    type: 'arduino',
-    name: 'Dev Board (MCU)',
-    category: 'controller',
-    description: '8-bit / 32-bit development microcontroller with digital and analog I/O headers.',
-    defaultColor: '#059669',
-    defaultScale: { x: 1, y: 1, z: 1 },
-    iconName: 'Microchip',
-    badge: '5V Logic',
-  },
-  {
-    type: 'led',
-    name: 'Indicator LED (5mm)',
-    category: 'output',
-    description: 'High-brightness diffused LED indicator for status signaling and visual feedback.',
-    defaultColor: '#ef4444',
-    defaultScale: { x: 1, y: 1, z: 1 },
-    iconName: 'Lightbulb',
-    badge: '20mA Output',
-  },
-  {
-    type: 'ultrasonic',
-    name: 'Ultrasonic Distance Sensor',
-    category: 'sensor',
-    description: 'Dual transducer sonar distance sensor for obstacle avoidance (2cm - 400cm).',
-    defaultColor: '#0284c7',
-    defaultScale: { x: 1, y: 1, z: 1 },
-    iconName: 'Radio',
-    badge: 'Sonar Range',
-  },
-  {
-    type: 'potentiometer',
-    name: 'Rotary Potentiometer (10k)',
-    category: 'sensor',
-    description: 'Adjustable rotary analog sensor for voltage division and manual analog control (0 - 1023 ADC).',
-    defaultColor: '#06b6d4',
-    defaultScale: { x: 1, y: 1, z: 1 },
-    iconName: 'Sliders',
-    badge: '0-1023 ADC',
-  },
-  {
-    type: 'line_sensor',
-    name: 'IR Line Tracking Sensor (TCRT5000)',
-    category: 'sensor',
-    description: 'Downward-facing infrared reflectance sensor module with digital switching and analog reflectance output.',
-    defaultColor: '#2563eb',
-    defaultScale: { x: 0.8, y: 0.8, z: 0.8 },
-    iconName: 'Compass',
-    badge: 'DO / AO IR',
-  },
-  {
-    type: 'obstacle_box',
-    name: 'Cardboard Obstacle Box',
-    category: 'structural',
-    description: 'Movable acoustic reflector box for testing ultrasonic obstacle detection.',
-    defaultColor: '#d97706',
-    defaultScale: { x: 1.2, y: 1.2, z: 1.2 },
-    iconName: 'Box',
-    badge: 'Obstacle',
-  },
-  {
-    type: 'obstacle_wall',
-    name: 'Obstacle Barrier Wall',
-    category: 'structural',
-    description: 'Movable barrier wall that blocks sonar sound waves and tests robot braking.',
-    defaultColor: '#64748b',
-    defaultScale: { x: 3.2, y: 1.8, z: 0.35 },
-    iconName: 'Shield',
-    badge: 'Barrier',
-  },
-];
+// Dynamic catalog generated from the comprehensive Hardware Component Registry
+export const COMPONENT_CATALOG: ComponentCatalogItem[] = componentRegistry.toLegacyCatalog();
 
-export const getCatalogItem = (type: ComponentType): ComponentCatalogItem | undefined => {
+export const getCatalogItem = (type: ComponentType | string): ComponentCatalogItem | undefined => {
+  const def = componentRegistry.get(type);
+  if (def) {
+    return componentRegistry.toCatalogItem(def);
+  }
   return COMPONENT_CATALOG.find((item) => item.type === type);
 };

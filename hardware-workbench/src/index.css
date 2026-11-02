@@ -3756,6 +3756,122 @@ select:focus {
 }
 .search-input-field:focus { border-color: #38bdf8; }
 
+.search-clear-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 2px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+.search-clear-btn:hover {
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.category-filter-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid #1e293b;
+  background: #090e1a;
+}
+
+.subcategory-filter-row {
+  display: flex;
+  gap: 4px;
+  padding: 6px 12px;
+  overflow-x: auto;
+  border-bottom: 1px solid #1e293b;
+  background: #0b1120;
+  scrollbar-width: thin;
+}
+.subcategory-filter-row::-webkit-scrollbar {
+  height: 3px;
+}
+
+.subcat-chip {
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #94a3b8;
+  background: #111827;
+  border: 1px solid #1f2937;
+  border-radius: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.subcat-chip:hover {
+  color: #f8fafc;
+  border-color: #38bdf8;
+}
+.subcat-chip.active {
+  color: #38bdf8;
+  background: rgba(56, 189, 248, 0.12);
+  border-color: #38bdf8;
+}
+
+.catalog-stats-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 12px;
+  font-size: 10px;
+  color: #64748b;
+  background: #0a0f1d;
+  border-bottom: 1px solid #1e293b;
+}
+
+.card-badges-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.spec-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #94a3b8;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sim-badge {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+.sim-badge.full {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.sim-badge.pin {
+  background: rgba(56, 189, 248, 0.15);
+  color: #38bdf8;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+.sim-badge.basic {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+.sim-badge.visual {
+  background: rgba(148, 163, 184, 0.12);
+  color: #cbd5e1;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+}
+
 .catalog-card-engineering {
   background: #111827;
   border: 1px solid #1f2937;

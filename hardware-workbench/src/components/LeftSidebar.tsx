@@ -1,31 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Plus, 
   Layers, 
   Zap, 
-  CircleDot, 
   Cpu, 
-  Microchip, 
   Lightbulb, 
-  Radio,
-  Sliders,
-  SlidersHorizontal,
-  Box,
-  Shield,
-  Eye,
-  EyeOff,
-  GitBranch,
-  FolderOpen,
-  Play,
-  PanelLeftClose,
-  PanelLeftOpen,
-  Search,
-  Trash2,
-  Wrench
+  Radio, 
+  Box, 
+  Eye, 
+  EyeOff, 
+  GitBranch, 
+  FolderOpen, 
+  Play, 
+  PanelLeftClose, 
+  PanelLeftOpen, 
+  Search, 
+  Trash2, 
+  X,
+  Grid,
+  Cable,
+  Plug
 } from 'lucide-react';
-import { COMPONENT_CATALOG } from '../utils/componentCatalog';
-import type { ComponentCategory, ComponentType, Component3D, MechanicalAttachment, WireConnection } from '../types/workbench';
-import { EXAMPLE_PROJECT_TEMPLATES, type ExampleProjectTemplate } from '../utils/exampleProjects';
+import { searchComponents, getCategoryCounts } from '../library/search';
+import { getCategoryMetadata } from '../library/categories';
+import type { HardwareCategory, HardwareSubcategory, HardwareComponentDefinition } from '../library/types';
+import { ComponentThumbnail } from './ComponentThumbnail';
+import type { ComponentType, Component3D, MechanicalAttachment, WireConnection } from '../types/workbench';
+import { EXAMPLE_PROJECT_TEMPLATES } from '../utils/exampleProjects';
 import type { ProjectConfig } from '../utils/projectPersistence';
 
 interface LeftSidebarProps {
@@ -44,13 +45,16 @@ interface LeftSidebarProps {
 
 type SidebarTab = 'components' | 'hierarchy' | 'templates';
 
-const CATEGORY_TABS: { id: ComponentCategory | 'all'; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'structural', label: 'Structure' },
-  { id: 'actuator', label: 'Motors' },
-  { id: 'controller', label: 'Boards' },
-  { id: 'output', label: 'Outputs' },
-  { id: 'sensor', label: 'Sensors' },
+const CATEGORY_TABS: { id: HardwareCategory | 'all'; label: string; icon: any }[] = [
+  { id: 'all', label: 'All', icon: Layers },
+  { id: 'development_boards', label: 'Dev Boards', icon: Cpu },
+  { id: 'prototyping', label: 'Breadboards', icon: Grid },
+  { id: 'wires_cables', label: 'Wires', icon: Cable },
+  { id: 'connectors_accessories', label: 'Connectors', icon: Plug },
+  { id: 'actuator', label: 'Motors', icon: Zap },
+  { id: 'sensor', label: 'Sensors', icon: Radio },
+  { id: 'structural', label: 'Structure', icon: Box },
+  { id: 'output', label: 'Outputs', icon: Lightbulb },
 ];
 
 export const LeftSidebar: React.FC<LeftSidebarProps> = ({
@@ -68,59 +72,70 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<SidebarTab>('components');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ComponentCategory | 'all'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<HardwareCategory | 'all'>('all');
+  const [selectedSubcategory, setSelectedSubcategory] = useState<HardwareSubcategory | 'all'>('all');
 
-  // Filter Catalog
-  const filteredCatalog = COMPONENT_CATALOG.filter((item) => {
-    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          item.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Category counts
+  const categoryCounts = useMemo(() => getCategoryCounts(), []);
 
-  const renderCatalogIcon = (name: string) => {
-    switch (name) {
-      case 'Layers': return <Layers size={15} />;
-      case 'Zap': return <Zap size={15} />;
-      case 'CircleDot': return <CircleDot size={15} />;
-      case 'Cpu': return <Cpu size={15} />;
-      case 'Microchip': return <Microchip size={15} />;
-      case 'Lightbulb': return <Lightbulb size={15} />;
-      case 'Radio': return <Radio size={15} />;
-      case 'Sliders': return <Sliders size={15} />;
-      case 'Box': return <Box size={15} />;
-      case 'Shield': return <Shield size={15} />;
-      default: return <SlidersHorizontal size={15} />;
+  // Available subcategories for current category
+  const availableSubcategories = useMemo(() => {
+    if (selectedCategory === 'all') return [];
+    const meta = getCategoryMetadata(selectedCategory);
+    return meta?.subcategories || [];
+  }, [selectedCategory]);
+
+  // Filtered components using search engine
+  const filteredComponents: HardwareComponentDefinition[] = useMemo(() => {
+    return searchComponents({
+      query: searchQuery,
+      category: selectedCategory === 'all' ? undefined : selectedCategory,
+      subcategory: selectedSubcategory === 'all' ? undefined : selectedSubcategory,
+    });
+  }, [searchQuery, selectedCategory, selectedSubcategory]);
+
+  const renderSimBadge = (level: string) => {
+    switch (level) {
+      case 'full':
+        return <span className="sim-badge full" title="Fully executable in Arduino AST compiler and physics">⚡ AST Simulated</span>;
+      case 'pin_mapping':
+        return <span className="sim-badge pin" title="Verified pins and wiring telemetry mapped">📌 Pin Graph</span>;
+      case 'basic':
+        return <span className="sim-badge basic" title="Passive continuity and circuit node sharing">🔌 Continuity</span>;
+      default:
+        return <span className="sim-badge visual" title="3D CAD geometry and placement representation">📐 3D CAD</span>;
     }
   };
 
   // Build Hierarchy Tree
-  // Identify parent-child attachments
   const childToParentMap = new Map<string, { parentId: string; mountId: string }>();
   const parentToChildrenMap = new Map<string, string[]>();
 
   attachments.forEach((att) => {
-    childToParentMap.set(att.childComponentId, { parentId: att.parentComponentId, mountId: att.parentMountId });
-    const currentChildren = parentToChildrenMap.get(att.parentComponentId) || [];
-    currentChildren.push(att.childComponentId);
-    parentToChildrenMap.set(att.parentComponentId, currentChildren);
+    childToParentMap.set(att.childComponentId, {
+      parentId: att.parentComponentId,
+      mountId: att.parentMountId,
+    });
+    const children = parentToChildrenMap.get(att.parentComponentId) || [];
+    children.push(att.childComponentId);
+    parentToChildrenMap.set(att.parentComponentId, children);
   });
 
-  // Root components are those that are not children of any attachment
   const rootComponents = components.filter((c) => !childToParentMap.has(c.id));
 
+  // Render collapsible compact bar when minimized
   if (isCollapsed) {
     return (
-      <aside className="left-sidebar-collapsed">
+      <aside className="component-sidebar left-sidebar-collapsed">
         <button 
-          className="sidebar-expand-btn" 
-          onClick={onToggleCollapse} 
-          title="Expand Left Sidebar (Components & Hierarchy)"
+          className="collapsed-toggle-btn"
+          onClick={onToggleCollapse}
+          title="Expand Left Sidebar (Catalog & Scene)"
           id="btn-expand-left-sidebar"
         >
           <PanelLeftOpen size={16} />
         </button>
-        <div className="collapsed-tab-icons">
+        <div className="collapsed-icon-strip">
           <button 
             className={`collapsed-icon-btn ${activeTab === 'components' ? 'active' : ''}`}
             onClick={() => { onToggleCollapse(); setActiveTab('components'); }}
@@ -175,12 +190,11 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             id="tab-starter-templates"
           >
             <FolderOpen size={13} />
-            <span>Templates</span>
+            <span>Presets</span>
           </button>
         </div>
-
-        <button 
-          className="sidebar-collapse-toggle-btn"
+        <button
+          className="sidebar-collapse-toggle"
           onClick={onToggleCollapse}
           title="Collapse Sidebar"
           id="btn-collapse-left-sidebar"
@@ -200,60 +214,128 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             <input
               type="text"
               className="search-input-field"
-              placeholder="Search components (Uno, Motor, Sonar)..."
+              placeholder="Search (Uno, ESP32, Breadboard, Jumper)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               id="input-catalog-search"
             />
+            {searchQuery && (
+              <button
+                className="search-clear-btn"
+                onClick={() => setSearchQuery('')}
+                title="Clear Search"
+              >
+                <X size={13} />
+              </button>
+            )}
           </div>
 
           {/* Category Filter Chips */}
           <div className="category-filter-chips">
-            {CATEGORY_TABS.map((tab) => (
+            {CATEGORY_TABS.map((tab) => {
+              const count = categoryCounts[tab.id as keyof typeof categoryCounts] ?? 0;
+              return (
+                <button
+                  key={tab.id}
+                  className={`filter-chip ${selectedCategory === tab.id ? 'active' : ''}`}
+                  onClick={() => {
+                    setSelectedCategory(tab.id);
+                    setSelectedSubcategory('all');
+                  }}
+                  title={tab.label}
+                >
+                  <span>{tab.label}</span>
+                  <span className="count-tag" style={{ marginLeft: 4, opacity: 0.7, fontSize: '9px' }}>
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Subcategory Filter Row (if active category has subcategories) */}
+          {availableSubcategories.length > 0 && (
+            <div className="subcategory-filter-row">
               <button
-                key={tab.id}
-                className={`filter-chip ${selectedCategory === tab.id ? 'active' : ''}`}
-                onClick={() => setSelectedCategory(tab.id)}
+                className={`subcat-chip ${selectedSubcategory === 'all' ? 'active' : ''}`}
+                onClick={() => setSelectedSubcategory('all')}
               >
-                {tab.label}
+                All {getCategoryMetadata(selectedCategory as HardwareCategory)?.label}
               </button>
-            ))}
+              {availableSubcategories.map((subcat) => (
+                <button
+                  key={subcat}
+                  className={`subcat-chip ${selectedSubcategory === subcat ? 'active' : ''}`}
+                  onClick={() => setSelectedSubcategory(subcat)}
+                >
+                  {subcat}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Results Summary Strip */}
+          <div className="catalog-stats-strip">
+            <span>Showing {filteredComponents.length} component{filteredComponents.length === 1 ? '' : 's'}</span>
+            <span>{categoryCounts.all} total registered</span>
           </div>
 
           {/* Catalog Cards List */}
           <div className="catalog-list">
-            {filteredCatalog.map((item) => (
-              <div key={item.type} className="catalog-card-engineering">
+            {filteredComponents.map((item) => (
+              <div 
+                key={item.id} 
+                className="catalog-card-engineering"
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData('text/plain', item.type);
+                }}
+              >
                 <div className="card-left">
-                  <div className="card-icon-box" style={{ color: item.defaultColor }}>
-                    {renderCatalogIcon(item.iconName)}
+                  <div className="card-icon-box" style={{ background: '#090e1a', padding: 2 }}>
+                    <ComponentThumbnail type={item.type} color={item.defaultColor} size={34} />
                   </div>
                   <div className="card-info">
                     <div className="card-name">{item.name}</div>
                     <div className="card-desc">{item.description}</div>
+                    <div className="card-badges-row">
+                      <span className="spec-badge">{item.badge}</span>
+                      {renderSimBadge(item.simulation.level)}
+                    </div>
                   </div>
                 </div>
                 <button
                   className="card-add-btn"
                   onClick={() => onAddComponent(item.type)}
-                  title={`Add ${item.name} to 3D scene`}
-                  id={`btn-add-${item.type}`}
+                  title={`Place ${item.name} in 3D scene`}
+                  id={`btn-add-${item.id}`}
                 >
                   <Plus size={15} />
                 </button>
               </div>
             ))}
 
-            {filteredCatalog.length === 0 && (
+            {filteredComponents.length === 0 && (
               <div className="empty-search-state">
-                No matching components found for "{searchQuery}".
+                <p>No components found matching "{searchQuery}".</p>
+                <button 
+                  className="filter-chip active"
+                  style={{ marginTop: 8 }}
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('all');
+                    setSelectedSubcategory('all');
+                  }}
+                >
+                  Clear search & filters
+                </button>
               </div>
             )}
           </div>
 
           {/* Catalog Footer Helper */}
           <div className="sidebar-footer-hint">
-            💡 Click <strong>+</strong> to spawn component at CAD origin.
+            💡 Click <strong>+</strong> or drag onto the 3D grid to place parts.
           </div>
         </div>
       )}
@@ -271,110 +353,16 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
             <span><strong>{wires.length}</strong> Wires</span>
           </div>
 
-          <div className="hierarchy-tree-container">
-            {components.length === 0 ? (
-              <div className="empty-search-state">
-                No components in scene. Add parts from Catalog.
+          <div className="hierarchy-tree-list">
+            {rootComponents.length === 0 ? (
+              <div className="empty-tree-state">
+                <Box size={24} style={{ opacity: 0.4, margin: '0 auto 8px' }} />
+                <p>Scene is empty.</p>
+                <p style={{ fontSize: '11px', color: '#64748b' }}>Add components from the Catalog to begin.</p>
               </div>
             ) : (
-              <div className="tree-list">
-                {rootComponents.map((root) => {
-                  const children = parentToChildrenMap.get(root.id) || [];
-                  const isSelected = selectedId === root.id;
-
-                  return (
-                    <div key={root.id} className="tree-node-group">
-                      {/* Root Item */}
-                      <div 
-                        className={`tree-node-row ${isSelected ? 'selected' : ''}`}
-                        onClick={() => onSelectComponent(root.id)}
-                      >
-                        <div className="tree-node-left">
-                          <span className="tree-type-pill" style={{ backgroundColor: `${root.color}25`, color: root.color, borderColor: `${root.color}50` }}>
-                            {root.type}
-                          </span>
-                          <span className="tree-node-label" title={root.name}>
-                            {root.name}
-                          </span>
-                        </div>
-
-                        <div className="tree-node-actions" onClick={(e) => e.stopPropagation()}>
-                          {onToggleVisibility && (
-                            <button
-                              className="node-action-btn"
-                              onClick={() => onToggleVisibility(root.id)}
-                              title={root.visible !== false ? 'Hide component' : 'Show component'}
-                            >
-                              {root.visible !== false ? <Eye size={13} /> : <EyeOff size={13} style={{ color: '#ef4444' }} />}
-                            </button>
-                          )}
-                          {onDeleteComponent && (
-                            <button
-                              className="node-action-btn delete-hover"
-                              onClick={() => onDeleteComponent(root.id)}
-                              title="Delete component"
-                            >
-                              <Trash2 size={13} />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Attached Children */}
-                      {children.length > 0 && (
-                        <div className="tree-children-container">
-                          {children.map((childId) => {
-                            const childComp = components.find((c) => c.id === childId);
-                            if (!childComp) return null;
-                            const isChildSelected = selectedId === childComp.id;
-                            const jointInfo = childToParentMap.get(childId);
-
-                            return (
-                              <div
-                                key={childComp.id}
-                                className={`tree-node-row child-node ${isChildSelected ? 'selected' : ''}`}
-                                onClick={() => onSelectComponent(childComp.id)}
-                              >
-                                <div className="tree-node-left">
-                                  <span className="tree-branch-line">└─</span>
-                                  <span className="tree-type-pill" style={{ backgroundColor: `${childComp.color}25`, color: childComp.color, borderColor: `${childComp.color}50` }}>
-                                    {childComp.type}
-                                  </span>
-                                  <span className="tree-node-label" title={childComp.name}>
-                                    {childComp.name}
-                                  </span>
-                                </div>
-
-                                <div className="tree-node-actions" onClick={(e) => e.stopPropagation()}>
-                                  {jointInfo && (
-                                    <span className="joint-tag" title={`Mounted to ${jointInfo.mountId}`}>
-                                      <Wrench size={10} />
-                                    </span>
-                                  )}
-                                  {onToggleVisibility && (
-                                    <button
-                                      className="node-action-btn"
-                                      onClick={() => onToggleVisibility(childComp.id)}
-                                      title={childComp.visible !== false ? 'Hide component' : 'Show component'}
-                                    >
-                                      {childComp.visible !== false ? <Eye size={13} /> : <EyeOff size={13} style={{ color: '#ef4444' }} />}
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
+              rootComponents.map((comp) => renderComponentNode(comp, 0))
             )}
-          </div>
-
-          <div className="sidebar-footer-hint">
-            Select an element to inspect transforms and terminal connections.
           </div>
         </div>
       )}
@@ -384,38 +372,78 @@ export const LeftSidebar: React.FC<LeftSidebarProps> = ({
       {/* ============================================================ */}
       {activeTab === 'templates' && (
         <div className="sidebar-tab-content">
-          <div className="sidebar-templates-list">
-            {EXAMPLE_PROJECT_TEMPLATES.map((tmpl: ExampleProjectTemplate) => (
-              <div key={tmpl.id} className="sidebar-template-card">
-                <div className="template-card-top">
-                  <span className="template-badge" style={{ backgroundColor: `${tmpl.badgeColor}20`, color: tmpl.badgeColor, borderColor: `${tmpl.badgeColor}40` }}>
-                    {tmpl.thumbnailBadge}
-                  </span>
-                  <span className="template-meta-text">
-                    {tmpl.config.components.length} parts
-                  </span>
+          <div className="templates-intro-bar">
+            <span>Pre-assembled blueprints ready for simulation:</span>
+          </div>
+          <div className="templates-list">
+            {EXAMPLE_PROJECT_TEMPLATES.map((tmpl) => (
+              <div key={tmpl.id} className="template-card">
+                <div className="template-card-header">
+                  <div className="template-title">{tmpl.title}</div>
+                  <span className="template-badge">{tmpl.thumbnailBadge}</span>
                 </div>
-                <div className="sidebar-template-name">{tmpl.title}</div>
-                <div className="sidebar-template-desc">{tmpl.description}</div>
-
+                <div className="template-desc">{tmpl.description}</div>
+                <div className="template-meta">
+                  <span>{tmpl.config.components.length} Parts</span>
+                  <span>•</span>
+                  <span>{(tmpl.config.wires || []).length} Wires</span>
+                </div>
                 <button
-                  className="sidebar-template-load-btn"
+                  className="btn-load-template"
                   onClick={() => onLoadTemplate(tmpl.config)}
-                  id={`sidebar-launch-${tmpl.id}`}
-                  style={{ borderColor: tmpl.badgeColor }}
+                  id={`btn-load-template-${tmpl.id}`}
                 >
-                  <Play size={12} fill={tmpl.badgeColor} style={{ color: tmpl.badgeColor }} />
-                  <span>Load Project Template</span>
+                  <Play size={13} />
+                  <span>Load Blueprint</span>
                 </button>
               </div>
             ))}
-          </div>
-
-          <div className="sidebar-footer-hint">
-            ⚠️ Loading a template replaces the active unsaved workspace.
           </div>
         </div>
       )}
     </aside>
   );
+
+  function renderComponentNode(comp: Component3D, depth: number): React.ReactNode {
+    const isSelected = selectedId === comp.id;
+    const childrenIds = parentToChildrenMap.get(comp.id) || [];
+    const children = components.filter((c) => childrenIds.includes(c.id));
+
+    return (
+      <div key={comp.id} className="tree-node-wrapper" style={{ marginLeft: depth * 12 }}>
+        <div 
+          className={`tree-node-item ${isSelected ? 'selected' : ''}`}
+          onClick={() => onSelectComponent(comp.id)}
+        >
+          <div className="node-item-left">
+            <span className="node-type-dot" style={{ backgroundColor: comp.color }} />
+            <span className="node-name" title={comp.name}>{comp.name}</span>
+          </div>
+
+          <div className="node-item-actions" onClick={(e) => e.stopPropagation()}>
+            {onToggleVisibility && (
+              <button 
+                className="node-action-btn"
+                onClick={() => onToggleVisibility(comp.id)}
+                title={comp.visible ? "Hide Component" : "Show Component"}
+              >
+                {comp.visible ? <Eye size={12} /> : <EyeOff size={12} style={{ color: '#ef4444' }} />}
+              </button>
+            )}
+            {onDeleteComponent && (
+              <button 
+                className="node-action-btn delete"
+                onClick={() => onDeleteComponent(comp.id)}
+                title="Delete Component"
+              >
+                <Trash2 size={12} />
+              </button>
+            )}
+          </div>
+        </div>
+
+        {children.map((child) => renderComponentNode(child, depth + 1))}
+      </div>
+    );
+  }
 };

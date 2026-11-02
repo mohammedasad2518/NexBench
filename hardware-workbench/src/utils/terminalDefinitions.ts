@@ -1,6 +1,11 @@
 import type { Component3D, ComponentType, TerminalDefinition, TerminalCategory, WireConnection } from '../types/workbench';
+import { ARDUINO_UNO_PINS, ARDUINO_MEGA_PINS, ARDUINO_NANO_PINS, ESP8266_NODEMCU_PINS, ESP32_DEVKIT_PINS, ESP32_CAM_PINS, RASPBERRY_PI_PICO_PINS, RASPBERRY_PI_4_PINS, STM32_BLUE_PILL_PINS } from '../library/definitions/boards';
+import { BREADBOARD_FULL_DEFINITION, BREADBOARD_HALF_DEFINITION, BREADBOARD_MINI_DEFINITION, PERFBOARD_PINS, STRIPBOARD_PINS, PCB_PROTOTYPE_PINS } from '../library/definitions/breadboards';
+import { WIRE_M2M_PINS } from '../library/definitions/wires';
+import { HEADER_MALE_PINS, HEADER_FEMALE_PINS, TERMINAL_BLOCK_PINS, CONNECTOR_JST_PINS, DC_BARREL_JACK_PINS, BREADBOARD_PSU_PINS } from '../library/definitions/accessories';
 
 export const COMPONENT_TERMINALS: Record<ComponentType, TerminalDefinition[]> = {
+  // Phase 1 Development Boards
   arduino: [
     // Digital Header (Top header: z = -0.78, y = 0.25)
     {
@@ -321,6 +326,46 @@ export const COMPONENT_TERMINALS: Record<ComponentType, TerminalDefinition[]> = 
     },
   ],
 
+  // Phase 1 Development Boards
+  arduino_mega: ARDUINO_MEGA_PINS,
+  arduino_nano: ARDUINO_NANO_PINS,
+  arduino_leonardo: ARDUINO_UNO_PINS,
+  esp8266_nodemcu: ESP8266_NODEMCU_PINS,
+  esp32_devkit: ESP32_DEVKIT_PINS,
+  esp32_cam: ESP32_CAM_PINS,
+  raspberry_pi_pico: RASPBERRY_PI_PICO_PINS,
+  raspberry_pi_pico_w: RASPBERRY_PI_PICO_PINS,
+  raspberry_pi_4: RASPBERRY_PI_4_PINS,
+  stm32_blue_pill: STM32_BLUE_PILL_PINS,
+
+  // Phase 1 Breadboards and Prototyping
+  breadboard_full: BREADBOARD_FULL_DEFINITION.pins,
+  breadboard_half: BREADBOARD_HALF_DEFINITION.pins,
+  breadboard_mini: BREADBOARD_MINI_DEFINITION.pins,
+  perfboard: PERFBOARD_PINS,
+  stripboard: STRIPBOARD_PINS,
+  pcb_prototype: PCB_PROTOTYPE_PINS,
+
+  // Phase 1 Wires and Cables
+  wire_m2m: WIRE_M2M_PINS,
+  wire_m2f: WIRE_M2M_PINS,
+  wire_f2f: WIRE_M2M_PINS,
+  wire_solid_core: WIRE_M2M_PINS,
+  wire_multicolor: WIRE_M2M_PINS,
+  cable_ribbon: WIRE_M2M_PINS,
+  cable_usb_ab: WIRE_M2M_PINS,
+  cable_micro_usb: WIRE_M2M_PINS,
+  cable_usb_c: WIRE_M2M_PINS,
+  wire_alligator: WIRE_M2M_PINS,
+
+  // Phase 1 Connectors and Accessories
+  header_male_40: HEADER_MALE_PINS,
+  header_female_40: HEADER_FEMALE_PINS,
+  terminal_block_2p: TERMINAL_BLOCK_PINS,
+  connector_jst_xh: CONNECTOR_JST_PINS,
+  dc_barrel_jack: DC_BARREL_JACK_PINS,
+  breadboard_psu_module: BREADBOARD_PSU_PINS,
+
   // Non-electrical mechanical components have no terminals
   chassis: [],
   wheel: [],
@@ -328,12 +373,13 @@ export const COMPONENT_TERMINALS: Record<ComponentType, TerminalDefinition[]> = 
   obstacle_wall: [],
 };
 
-export function getComponentTerminals(comp: Component3D): TerminalDefinition[] {
-  return COMPONENT_TERMINALS[comp.type] || [];
+export function getComponentTerminals(compOrType: Component3D | ComponentType): TerminalDefinition[] {
+  const type = typeof compOrType === 'string' ? compOrType : compOrType?.type;
+  return COMPONENT_TERMINALS[type] || [];
 }
 
-export function findTerminal(comp: Component3D, terminalId: string): TerminalDefinition | undefined {
-  const terminals = getComponentTerminals(comp);
+export function findTerminal(compOrType: Component3D | ComponentType, terminalId: string): TerminalDefinition | undefined {
+  const terminals = getComponentTerminals(compOrType);
   return terminals.find((t) => t.id === terminalId);
 }
 

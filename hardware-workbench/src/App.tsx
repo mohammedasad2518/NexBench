@@ -1492,6 +1492,7 @@ export function App() {
             else if (selectedWireId) handleDeleteWire(selectedWireId);
           }}
           setTransformMode={setTransformMode}
+          onDropComponent={handleAddComponent}
           wires={wires}
           selectedWireId={selectedWireId}
           onSelectWire={(wId) => {

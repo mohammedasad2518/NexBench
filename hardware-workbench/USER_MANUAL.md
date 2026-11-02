@@ -82,7 +82,7 @@ The main workbench employs a compact, multi-panel layout inspired by modern elec
    - **Secondary Viewport Strip (36px):** Transform gizmo buttons (Translate [W], Rotate [E], Scale [R]), Snapping toggle (0.5m grid / 15° rotation), Track surface selector, and Camera view angle presets (Perspective, Top [Y], Front [Z], Side [X], Reset View).
 
 2. **Left Engineering Sidebar:**
-   - **Component Catalog Tab:** Search bar and category chips (`All`, `Controllers`, `Motors`, `Sensors`, `Passive`, `Chassis`) to browse and add components to the scene.
+   - **Component Catalog Tab:** Search bar with instant clear button, category filter pills (`All`, `Dev Boards (11)`, `Breadboards (6)`, `Wires & Cables (10)`, `Connectors (6)`), subcategory filter row (`Arduino`, `Espressif`, `Raspberry Pi`, `STM32`, `Solderless`, `Perfboards`, `DuPont Jumpers`, `USB`, `Headers`, etc.), and component engineering cards with SVG vector CAD thumbnails, technical spec badges, and direct drag-and-drop placement into the 3D viewport.
    - **Scene Hierarchy Tab:** Interactive scene tree displaying parent-child mechanical attachments (e.g. wheels attached to chassis mounts), component selection, and visibility toggle eyes.
    - **Starter Templates Tab:** Fast in-workspace template switching.
    - **Collapse Rail (36px):** Click the collapse chevron or rail to minimize the sidebar and maximize 3D canvas real estate.
@@ -201,6 +201,29 @@ Connections in the Hardware Workbench follow strict electrical terminal definiti
 6. **Status LED (5mm):**
    - `ANODE` — Long positive lead (connect to digital output pin).
    - `CATHODE` — Flat edge ground lead (connect to Ground).
+
+### Phase 1 Hardware Component Library
+Phase 1 introduces a scalable catalog architecture covering 33 newly defined electronic components organized across 4 primary categories:
+1. **Development Boards (11 Boards):**
+   - **Arduino Uno R3 & Arduino Mega 2560 R3:** 8-bit AVR microcontrollers with full GPIO, PWM, and ADC headers.
+   - **Arduino Nano & Arduino Leonardo:** Compact form factors with USB serial communication.
+   - **ESP8266 NodeMCU & ESP32 DevKit V1:** 2.4GHz Wi-Fi and Bluetooth BLE IoT platforms with 3.3V logic.
+   - **ESP32-CAM:** Integrated OV2640 camera interface module and high-current power input.
+   - **Raspberry Pi Pico & Pico W:** RP2040 dual ARM Cortex-M0+ silicon with 26 multi-function GPIOs.
+   - **Raspberry Pi 4 Model B:** Quad-core 64-bit SBC with 40-pin GPIO header and USB-C power input.
+   - **STM32 Blue Pill:** 72MHz 32-bit ARM Cortex-M3 microcontroller with dual 20-pin header layout.
+2. **Breadboards & Prototyping Systems (6 Boards):**
+   - **Full-Size (830 tie points), Half-Size (400 tie points), Mini (170 tie points):** High-density solderless breadboards featuring 5-hole column node sharing (`T_{row}_a` to `e`, `T_{row}_f` to `j`), center trench electrical isolation, and full-length positive/negative power distribution rails.
+   - **Perfboard & Stripboard (Veroboard):** Prototyping PCBs featuring isolated pads or continuous longitudinal copper rails with internal node verification via `areTerminalsConnected()`.
+   - **Double-Sided FR4 Prototype PCB:** Plated through-hole prototyping board with dual perimeter power/ground buses.
+3. **Wires & Physical Cables (10 Types):**
+   - **DuPont Jumper Wires (26 AWG):** Male-to-Male (M-M), Male-to-Female (M-F), and Female-to-Female (F-F) jumpers with molded strain relief.
+   - **Hookup Wires:** 22 AWG Solid-Core Wire, 10-Color Rainbow Ribbon, 16-Pin Flat IDC Ribbon.
+   - **Data & Power Cables:** USB A-to-B, Micro-USB 2.0, USB-C (3A rated), Alligator Clip Test Leads.
+4. **Connectors & Accessories (6 Components):**
+   - **Headers:** 1x40 Breakaway Male Pin Header (2.54mm), 1x40 Female Pin Socket Strip.
+   - **Terminals & Plugs:** 2-Pin Screw Terminal Block (5.08mm, 16A), 2-Pin Shrouded JST-XH Header, 2.1mm DC Barrel Jack.
+   - **Breadboard Power Supply Module (MB102):** Dual independent 3.3V/5V rails, push-button power latch, and DC barrel input.
 
 ### Point-and-Click Wiring Workflow
 1. Hover over any component to reveal its glowing connection terminals.
@@ -365,20 +388,21 @@ The Hardware Workbench test suite contains **11 automated test suites** covering
 ================================================================
 Hardware Workbench Automated Regression Verification Summary
 ================================================================
-1. test_17_scenarios.ts          :  17 /  17 PASS (100%)
-2. test_phase5a.ts               :  33 /  33 PASS (100%)
-3. test_phase5b.ts               :  28 /  28 PASS (100%)
-4. test_phase6_kinematics.ts     :  37 /  37 PASS (100%)
-5. test_phase6_closed_loop.ts    :  16 /  16 PASS (100%)
-6. test_phase7_encoders.ts       :  52 /  52 PASS (100%)
-7. test_phase8_line_sensor.ts    :  68 /  68 PASS (100%)
-8. test_phase9_pid.ts            :  32 /  32 PASS (100%)
-9. test_phase9b_radar.ts         :  56 /  56 PASS (100%)
-10. test_phase9c_persistence.ts   :  82 /  82 PASS (100%)
-11. test_phase10_reliability.ts   : 319 / 319 PASS (100%)
+1. test_17_scenarios.ts          :   17 /   17 PASS (100%)
+2. test_phase5a.ts               :   33 /   33 PASS (100%)
+3. test_phase5b.ts               :   28 /   28 PASS (100%)
+4. test_phase6_kinematics.ts     :   37 /   37 PASS (100%)
+5. test_phase6_closed_loop.ts    :   16 /   16 PASS (100%)
+6. test_phase7_encoders.ts       :   52 /   52 PASS (100%)
+7. test_phase8_line_sensor.ts    :   68 /   68 PASS (100%)
+8. test_phase9_pid.ts            :   32 /   32 PASS (100%)
+9. test_phase9b_radar.ts         :   56 /   56 PASS (100%)
+10. test_phase9c_persistence.ts   :   82 /   82 PASS (100%)
+11. test_phase10_reliability.ts   :  319 /  319 PASS (100%)
+12. test_phase1_component_library.ts: 285 / 285 PASS (100%)
 ----------------------------------------------------------------
-TOTAL ASSERTIONS PASSING         : 740 / 740 PASS (100%)
-PRODUCTION BUNDLE BUILD STATUS   : 0 Errors (built in ~805ms)
+TOTAL ASSERTIONS PASSING         : 1025 / 1025 PASS (100%)
+PRODUCTION BUNDLE BUILD STATUS   : 0 Errors (built in ~1.10s)
 ================================================================
 ```
 
