@@ -79,3 +79,4 @@ export function getCategoryCounts(): Record<HardwareCategory | 'all', number> {
 
   return counts as Record<HardwareCategory | 'all', number>;
 }
+

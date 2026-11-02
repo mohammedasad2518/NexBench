@@ -22,7 +22,12 @@ import {
   PanelRightClose,
   PanelRightOpen,
   ExternalLink,
-  Info
+  Info,
+  Cpu,
+  Shield,
+  Power,
+  ToggleLeft,
+  ToggleRight
 } from 'lucide-react';
 import { componentRegistry } from '../library/registry';
 import type { 
@@ -102,6 +107,74 @@ const WIRE_COLOR_SWATCHES = [
   '#8b5cf6', // Violet
   '#f8fafc', // White
 ];
+
+// Phase 2: Electronic Component Presets and Specifications
+const RESISTOR_STANDARD_VALUES = [
+  { ohms: 100, label: '100 Ω' },
+  { ohms: 220, label: '220 Ω' },
+  { ohms: 330, label: '330 Ω' },
+  { ohms: 470, label: '470 Ω' },
+  { ohms: 1000, label: '1 kΩ' },
+  { ohms: 2200, label: '2.2 kΩ' },
+  { ohms: 4700, label: '4.7 kΩ' },
+  { ohms: 10000, label: '10 kΩ' },
+  { ohms: 47000, label: '47 kΩ' },
+  { ohms: 100000, label: '100 kΩ' },
+  { ohms: 1000000, label: '1 MΩ' },
+];
+
+const RESISTOR_COLOR_CODES: Record<number, { bands: string[]; hex: string[] }> = {
+  100: { bands: ['Brown', 'Black', 'Brown', 'Gold'], hex: ['#78350f', '#000000', '#78350f', '#d97706'] },
+  220: { bands: ['Red', 'Red', 'Brown', 'Gold'], hex: ['#ef4444', '#ef4444', '#78350f', '#d97706'] },
+  330: { bands: ['Orange', 'Orange', 'Brown', 'Gold'], hex: ['#f97316', '#f97316', '#78350f', '#d97706'] },
+  470: { bands: ['Yellow', 'Violet', 'Brown', 'Gold'], hex: ['#eab308', '#a855f7', '#78350f', '#d97706'] },
+  1000: { bands: ['Brown', 'Black', 'Red', 'Gold'], hex: ['#78350f', '#000000', '#ef4444', '#d97706'] },
+  2200: { bands: ['Red', 'Red', 'Red', 'Gold'], hex: ['#ef4444', '#ef4444', '#ef4444', '#d97706'] },
+  4700: { bands: ['Yellow', 'Violet', 'Red', 'Gold'], hex: ['#eab308', '#a855f7', '#ef4444', '#d97706'] },
+  10000: { bands: ['Brown', 'Black', 'Orange', 'Gold'], hex: ['#78350f', '#000000', '#f97316', '#d97706'] },
+  47000: { bands: ['Yellow', 'Violet', 'Orange', 'Gold'], hex: ['#eab308', '#a855f7', '#f97316', '#d97706'] },
+  100000: { bands: ['Brown', 'Black', 'Yellow', 'Gold'], hex: ['#78350f', '#000000', '#eab308', '#d97706'] },
+  1000000: { bands: ['Brown', 'Black', 'Green', 'Gold'], hex: ['#78350f', '#000000', '#22c55e', '#d97706'] },
+};
+
+const CERAMIC_CAP_VALUES = [
+  { val: '10pF', label: '10 pF (10)' },
+  { val: '22pF', label: '22 pF (22)' },
+  { val: '100pF', label: '100 pF (101)' },
+  { val: '1nF', label: '1 nF (102)' },
+  { val: '10nF', label: '10 nF (103)' },
+  { val: '100nF', label: '100 nF (104)' },
+  { val: '1µF', label: '1 µF (105)' },
+];
+
+const ELECTROLYTIC_CAP_VALUES = [
+  { val: '1µF', label: '1 µF / 25V' },
+  { val: '4.7µF', label: '4.7 µF / 25V' },
+  { val: '10µF', label: '10 µF / 25V' },
+  { val: '47µF', label: '47 µF / 25V' },
+  { val: '100µF', label: '100 µF / 25V' },
+  { val: '220µF', label: '220 µF / 25V' },
+  { val: '470µF', label: '470 µF / 25V' },
+  { val: '1000µF', label: '1000 µF / 25V' },
+];
+
+const INDUCTOR_VALUES = [
+  { val: '10µH', label: '10 µH' },
+  { val: '47µH', label: '47 µH' },
+  { val: '100µH', label: '100 µH (1.5A)' },
+  { val: '220µH', label: '220 µH' },
+  { val: '1mH', label: '1 mH' },
+  { val: '10mH', label: '10 mH' },
+];
+
+const CRYSTAL_FREQ_VALUES = [
+  { val: '8.000 MHz', label: '8.000 MHz' },
+  { val: '12.000 MHz', label: '12.000 MHz' },
+  { val: '16.000 MHz', label: '16.000 MHz (Uno Std)' },
+  { val: '20.000 MHz', label: '20.000 MHz' },
+];
+
+const DIP_PIN_COUNTS = [8, 14, 16, 28];
 
 export const PropertiesPanel = ({
   selectedComponent,
@@ -1041,10 +1114,16 @@ export const PropertiesPanel = ({
         </div>
       )}
 
-      {selectedComponent.type === 'potentiometer' && (
+      {(selectedComponent.type === 'potentiometer' ||
+        selectedComponent.type === 'potentiometer_rotary' ||
+        selectedComponent.type === 'resistor_variable') && (
         <div className="prop-section" style={{ borderLeft: '3px solid #06b6d4', paddingLeft: '8px', backgroundColor: 'rgba(6, 182, 212, 0.04)' }}>
           <div className="prop-section-title">
-            <span style={{ color: '#06b6d4', fontWeight: 600 }}>Rotary Potentiometer (10kΩ)</span>
+            <span style={{ color: '#06b6d4', fontWeight: 600 }}>
+              {selectedComponent.type === 'resistor_variable'
+                ? 'Trimpot / Variable Resistor (10kΩ)'
+                : 'Rotary Potentiometer (10kΩ)'}
+            </span>
             <Sliders size={14} color="#06b6d4" />
           </div>
 
@@ -1374,6 +1453,883 @@ export const PropertiesPanel = ({
           </div>
         </div>
       )}
+
+      {/* ================================================================= */}
+      {/* Phase 2: Basic Electronic Components Controls & Configuration     */}
+      {/* ================================================================= */}
+
+      {/* 1. Fixed Resistor */}
+      {selectedComponent.type === 'resistor_fixed' && (() => {
+        const currentOhms = selectedComponent.metadata?.resistance || 220;
+        const colorInfo = RESISTOR_COLOR_CODES[currentOhms] || {
+          bands: ['Red', 'Red', 'Brown', 'Gold'],
+          hex: ['#ef4444', '#ef4444', '#78350f', '#d97706'],
+        };
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #ec4899', paddingLeft: '8px', backgroundColor: 'rgba(236, 72, 153, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#ec4899', fontWeight: 600 }}>Fixed Resistor (1/4W 5%)</span>
+              <Zap size={14} color="#ec4899" />
+            </div>
+
+            {/* 4-Band Color Code Graphic */}
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '4px' }}>
+                4-Band EIA Color Code:
+              </div>
+              <div style={{
+                display: 'flex',
+                height: '24px',
+                borderRadius: '4px',
+                overflow: 'hidden',
+                border: '1px solid #334155',
+                backgroundColor: '#d4b483',
+                alignItems: 'center',
+                padding: '0 8px',
+                gap: '8px'
+              }}>
+                <div style={{ flex: 1, height: '4px', backgroundColor: '#94a3b8' }} />
+                {colorInfo.hex.map((hex, idx) => (
+                  <div
+                    key={idx}
+                    title={colorInfo.bands[idx]}
+                    style={{
+                      width: idx === 3 ? '8px' : '10px',
+                      height: '100%',
+                      backgroundColor: hex,
+                      borderLeft: '1px solid rgba(0,0,0,0.2)',
+                      borderRight: '1px solid rgba(0,0,0,0.2)'
+                    }}
+                  />
+                ))}
+                <div style={{ flex: 1, height: '4px', backgroundColor: '#94a3b8' }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '9px', color: 'var(--text-muted)', marginTop: '3px' }}>
+                {colorInfo.bands.map((b, i) => (
+                  <span key={i} style={{ fontFamily: 'JetBrains Mono' }}>{b}</span>
+                ))}
+              </div>
+            </div>
+
+            {/* Standard Value Selector */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600 }}>Resistance:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', fontWeight: 700, color: '#ec4899' }}>
+                  {selectedComponent.metadata?.resistanceLabel || `${currentOhms} Ω`}
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '4px' }}>
+                {RESISTOR_STANDARD_VALUES.map((r) => {
+                  const isSel = currentOhms === r.ohms;
+                  return (
+                    <button
+                      key={r.ohms}
+                      type="button"
+                      className="action-btn"
+                      style={{
+                        fontSize: '9.5px',
+                        padding: '4px 2px',
+                        textAlign: 'center',
+                        backgroundColor: isSel ? 'rgba(236, 72, 153, 0.25)' : undefined,
+                        borderColor: isSel ? '#ec4899' : undefined,
+                        color: isSel ? '#f472b6' : undefined,
+                        fontWeight: isSel ? 700 : 400
+                      }}
+                      onClick={() => {
+                        onUpdateComponent({
+                          ...selectedComponent,
+                          metadata: {
+                            ...selectedComponent.metadata,
+                            resistance: r.ohms,
+                            resistanceLabel: r.label,
+                          },
+                        });
+                      }}
+                    >
+                      {r.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 2. Capacitors (Ceramic & Electrolytic) */}
+      {(selectedComponent.type === 'capacitor_ceramic' || selectedComponent.type === 'capacitor_electrolytic') && (() => {
+        const isElec = selectedComponent.type === 'capacitor_electrolytic';
+        const presets = isElec ? ELECTROLYTIC_CAP_VALUES : CERAMIC_CAP_VALUES;
+        const currentCap = selectedComponent.metadata?.capacitanceLabel || (isElec ? '10 µF / 25V' : '100 nF (104)');
+
+        return (
+          <div className="prop-section" style={{ borderLeft: `3px solid ${isElec ? '#3b82f6' : '#d97706'}`, paddingLeft: '8px', backgroundColor: isElec ? 'rgba(59, 130, 246, 0.04)' : 'rgba(217, 119, 6, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: isElec ? '#60a5fa' : '#fbbf24', fontWeight: 600 }}>
+                {isElec ? 'Aluminum Electrolytic Capacitor' : 'Ceramic Disc Capacitor'}
+              </span>
+              <Zap size={14} color={isElec ? '#60a5fa' : '#fbbf24'} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Dielectric:</span>
+                <span style={{ fontWeight: 600 }}>{isElec ? 'Liquid Electrolyte' : 'Class II Ceramic'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Polarity:</span>
+                <span style={{ color: isElec ? '#ef4444' : '#10b981', fontWeight: 600 }}>
+                  {isElec ? '⚠ Polarized (Cathode Stripe)' : '✓ Non-Polarized'}
+                </span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Voltage Rating:</span>
+                <span style={{ fontFamily: 'JetBrains Mono' }}>{isElec ? '25 V DC Max' : '50 V DC Max'}</span>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600 }}>Capacitance Rating:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11.5px', fontWeight: 700, color: isElec ? '#60a5fa' : '#fbbf24' }}>
+                  {currentCap}
+                </span>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' }}>
+                {presets.map((p) => {
+                  const isSel = currentCap === p.label || selectedComponent.metadata?.capacitance === p.val;
+                  return (
+                    <button
+                      key={p.val}
+                      type="button"
+                      className="action-btn"
+                      style={{
+                        fontSize: '9.5px',
+                        padding: '4px 2px',
+                        textAlign: 'center',
+                        backgroundColor: isSel ? (isElec ? 'rgba(59, 130, 246, 0.25)' : 'rgba(217, 119, 6, 0.25)') : undefined,
+                        borderColor: isSel ? (isElec ? '#3b82f6' : '#d97706') : undefined,
+                        color: isSel ? '#ffffff' : undefined,
+                        fontWeight: isSel ? 700 : 400
+                      }}
+                      onClick={() => {
+                        onUpdateComponent({
+                          ...selectedComponent,
+                          metadata: {
+                            ...selectedComponent.metadata,
+                            capacitance: p.val,
+                            capacitanceLabel: p.label,
+                          },
+                        });
+                      }}
+                    >
+                      {p.val}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 3. Inductor & Crystal Oscillator */}
+      {(selectedComponent.type === 'inductor' || selectedComponent.type === 'crystal_oscillator') && (() => {
+        const isInd = selectedComponent.type === 'inductor';
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #10b981', paddingLeft: '8px', backgroundColor: 'rgba(16, 185, 129, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#34d399', fontWeight: 600 }}>
+                {isInd ? 'Toroidal Power Inductor' : 'Quartz Crystal (HC-49/S)'}
+              </span>
+              <Activity size={14} color="#34d399" />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Package:</span>
+                <span style={{ fontWeight: 600 }}>{isInd ? 'Ferrite Toroid Coil' : 'Low Profile Metal Can'}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>{isInd ? 'Max DC Current:' : 'Load Capacitance:'}</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#10b981', fontWeight: 600 }}>
+                  {isInd ? '1.5 A Continuous' : '18 pF (±20 ppm)'}
+                </span>
+              </div>
+            </div>
+
+            {isInd ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600 }}>Nominal Inductance:</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '4px' }}>
+                  {INDUCTOR_VALUES.map((iv) => {
+                    const isSel = (selectedComponent.metadata?.inductance || '100µH') === iv.val;
+                    return (
+                      <button
+                        key={iv.val}
+                        type="button"
+                        className="action-btn"
+                        style={{
+                          fontSize: '9.5px',
+                          padding: '4px 2px',
+                          backgroundColor: isSel ? 'rgba(16, 185, 129, 0.25)' : undefined,
+                          borderColor: isSel ? '#10b981' : undefined,
+                          color: isSel ? '#34d399' : undefined,
+                          fontWeight: isSel ? 700 : 400
+                        }}
+                        onClick={() => {
+                          onUpdateComponent({
+                            ...selectedComponent,
+                            metadata: {
+                              ...selectedComponent.metadata,
+                              inductance: iv.val,
+                              inductanceLabel: iv.label,
+                            },
+                          });
+                        }}
+                      >
+                        {iv.val}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600 }}>Resonant Frequency:</span>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '4px' }}>
+                  {CRYSTAL_FREQ_VALUES.map((cf) => {
+                    const isSel = (selectedComponent.metadata?.crystalFreq || '16.000 MHz') === cf.val;
+                    return (
+                      <button
+                        key={cf.val}
+                        type="button"
+                        className="action-btn"
+                        style={{
+                          fontSize: '9.5px',
+                          padding: '4px 2px',
+                          backgroundColor: isSel ? 'rgba(16, 185, 129, 0.25)' : undefined,
+                          borderColor: isSel ? '#10b981' : undefined,
+                          color: isSel ? '#34d399' : undefined,
+                          fontWeight: isSel ? 700 : 400
+                        }}
+                        onClick={() => {
+                          onUpdateComponent({
+                            ...selectedComponent,
+                            metadata: {
+                              ...selectedComponent.metadata,
+                              crystalFreq: cf.val,
+                            },
+                          });
+                        }}
+                      >
+                        {cf.val}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* 4. Diodes (Rectifier, Zener, Schottky) */}
+      {(selectedComponent.type === 'diode_rectifier' || selectedComponent.type === 'diode_zener' || selectedComponent.type === 'diode_schottky') && (() => {
+        let name = '1N4007 Silicon Rectifier';
+        let vf = '0.7 V';
+        let vr = '1000 V PRV';
+        let ifMax = '1.0 A';
+
+        if (selectedComponent.type === 'diode_zener') {
+          name = '1N4733A 5.1V Zener Diode';
+          vf = '1.0 V';
+          vr = '5.1 V Breakdown (1.0W)';
+          ifMax = '178 mA';
+        } else if (selectedComponent.type === 'diode_schottky') {
+          name = '1N5819 Schottky Barrier Diode';
+          vf = '0.35 V (Low Drop)';
+          vr = '40 V PRV';
+          ifMax = '1.0 A';
+        }
+
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #8b5cf6', paddingLeft: '8px', backgroundColor: 'rgba(139, 92, 246, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#a78bfa', fontWeight: 600 }}>{name}</span>
+              <Shield size={14} color="#a78bfa" />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Cathode Orientation:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#cbd5e1' }}>Band mark = Cathode (-)</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Forward Drop (Vf):</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#a78bfa', fontWeight: 600 }}>{vf}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Peak Reverse / Zener:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#cbd5e1' }}>{vr}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Max Current:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#10b981' }}>{ifMax}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 5. RGB LED, IR LED, Photodiode */}
+      {(selectedComponent.type === 'led_rgb' || selectedComponent.type === 'led_ir' || selectedComponent.type === 'photodiode') && (() => {
+        if (selectedComponent.type === 'led_rgb') {
+          const isAnode = selectedComponent.metadata?.rgbCommonMode === 'common_anode';
+          const r = selectedComponent.metadata?.rgbRed ?? 255;
+          const g = selectedComponent.metadata?.rgbGreen ?? 100;
+          const b = selectedComponent.metadata?.rgbBlue ?? 50;
+          const colorHex = `rgb(${r}, ${g}, ${b})`;
+
+          return (
+            <div className="prop-section" style={{ borderLeft: '3px solid #f43f5e', paddingLeft: '8px', backgroundColor: 'rgba(244, 63, 94, 0.04)' }}>
+              <div className="prop-section-title">
+                <span style={{ color: '#fb7185', fontWeight: 600 }}>4-Pin RGB Diffused LED</span>
+                <Palette size={14} color="#fb7185" />
+              </div>
+
+              {/* Common Configuration Toggle */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Common Terminal:</span>
+                <button
+                  type="button"
+                  className="action-btn"
+                  style={{
+                    fontSize: '10px',
+                    padding: '3px 8px',
+                    backgroundColor: isAnode ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                    borderColor: isAnode ? '#ef4444' : '#10b981',
+                    color: isAnode ? '#f87171' : '#34d399',
+                    fontWeight: 600
+                  }}
+                  onClick={() => {
+                    onUpdateComponent({
+                      ...selectedComponent,
+                      metadata: {
+                        ...selectedComponent.metadata,
+                        rgbCommonMode: isAnode ? 'common_cathode' : 'common_anode',
+                      },
+                    });
+                  }}
+                >
+                  {isAnode ? 'Common Anode (+VCC)' : 'Common Cathode (GND)'}
+                </button>
+              </div>
+
+              {/* Mixed Color Swatch */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                padding: '6px',
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                borderRadius: '5px',
+                marginBottom: '8px'
+              }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '4px',
+                  backgroundColor: colorHex,
+                  border: '1px solid #475569',
+                  boxShadow: `0 0 10px ${colorHex}`
+                }} />
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 600 }}>Color Output Preview</span>
+                  <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#94a3b8' }}>
+                    RGB({r}, {g}, {b})
+                  </span>
+                </div>
+              </div>
+
+              {/* RGB Channel Sliders */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {[
+                  { label: 'R', val: r, key: 'rgbRed', color: '#ef4444' },
+                  { label: 'G', val: g, key: 'rgbGreen', color: '#22c55e' },
+                  { label: 'B', val: b, key: 'rgbBlue', color: '#3b82f6' },
+                ].map((ch) => (
+                  <div key={ch.label} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontFamily: 'JetBrains Mono', fontWeight: 700, color: ch.color, width: '12px', fontSize: '11px' }}>
+                      {ch.label}
+                    </span>
+                    <input
+                      type="range"
+                      min="0"
+                      max="255"
+                      value={ch.val}
+                      className="speed-range"
+                      style={{ flex: 1 }}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value, 10) || 0;
+                        onUpdateComponent({
+                          ...selectedComponent,
+                          metadata: {
+                            ...selectedComponent.metadata,
+                            [ch.key]: v,
+                          },
+                        });
+                      }}
+                    />
+                    <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', width: '28px', textAlign: 'right' }}>
+                      {ch.val}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        if (selectedComponent.type === 'led_ir') {
+          return (
+            <div className="prop-section" style={{ borderLeft: '3px solid #6366f1', paddingLeft: '8px', backgroundColor: 'rgba(99, 102, 241, 0.04)' }}>
+              <div className="prop-section-title">
+                <span style={{ color: '#818cf8', fontWeight: 600 }}>Infrared (IR) Emitter LED</span>
+                <Radio size={14} color="#818cf8" />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Peak Wavelength:</span>
+                  <span style={{ fontFamily: 'JetBrains Mono', color: '#818cf8', fontWeight: 600 }}>940 nm (Near-IR)</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Lens Appearance:</span>
+                  <span>Dark Blue Smoke Diffused</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Forward Drop (Vf):</span>
+                  <span style={{ fontFamily: 'JetBrains Mono' }}>1.2 V – 1.5 V</span>
+                </div>
+                <div style={{ fontSize: '10px', color: '#94a3b8', fontStyle: 'italic', marginTop: '2px' }}>
+                  💡 Radiation is invisible to the human eye. Used for remote controls and optical beam barriers.
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        // Photodiode
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #0284c7', paddingLeft: '8px', backgroundColor: 'rgba(2, 132, 199, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#38bdf8', fontWeight: 600 }}>Silicon Photodiode Detector</span>
+              <Eye size={14} color="#38bdf8" />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Spectral Range:</span>
+                <span style={{ fontFamily: 'JetBrains Mono' }}>400 nm – 1100 nm</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Peak Sensitivity:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#38bdf8', fontWeight: 600 }}>850 nm</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Response Time:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#10b981' }}>5 ns (High Speed)</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Operating Mode:</span>
+                <span>Photoconductive (Reverse Bias)</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 6. Transistors & MOSFETs */}
+      {(selectedComponent.type === 'transistor_npn' || selectedComponent.type === 'transistor_pnp' || selectedComponent.type === 'mosfet_n_channel' || selectedComponent.type === 'mosfet_p_channel') && (() => {
+        const isN = selectedComponent.type === 'transistor_npn' || selectedComponent.type === 'mosfet_n_channel';
+
+        let part = '2N3904';
+        let polarity = 'NPN Bipolar Junction';
+        let packageType = 'TO-92 Plastic';
+        let pinout = '1: Emitter | 2: Base | 3: Collector';
+        let maxV = '40 V (Vceo)';
+        let maxI = '200 mA (Ic)';
+        let metric = 'Gain (hFE): 100 - 300';
+
+        if (selectedComponent.type === 'transistor_pnp') {
+          part = '2N3906';
+          polarity = 'PNP Bipolar Junction';
+          maxV = '-40 V (Vceo)';
+          maxI = '-200 mA (Ic)';
+        } else if (selectedComponent.type === 'mosfet_n_channel') {
+          part = 'IRF540N';
+          polarity = 'N-Channel Power MOSFET';
+          packageType = 'TO-220 Metal Tab';
+          pinout = '1: Gate | 2: Drain (Tab) | 3: Source';
+          maxV = '100 V (Vdss)';
+          maxI = '33 A (Id)';
+          metric = 'Rds(on): 44 mΩ @ 10V';
+        } else if (selectedComponent.type === 'mosfet_p_channel') {
+          part = 'IRF9540';
+          polarity = 'P-Channel Power MOSFET';
+          packageType = 'TO-220 Metal Tab';
+          pinout = '1: Gate | 2: Drain (Tab) | 3: Source';
+          maxV = '-100 V (Vdss)';
+          maxI = '-23 A (Id)';
+          metric = 'Rds(on): 117 mΩ @ -10V';
+        }
+
+        return (
+          <div className="prop-section" style={{ borderLeft: `3px solid ${isN ? '#059669' : '#d97706'}`, paddingLeft: '8px', backgroundColor: isN ? 'rgba(5, 150, 105, 0.04)' : 'rgba(217, 119, 6, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: isN ? '#34d399' : '#fbbf24', fontWeight: 600 }}>{part} ({polarity})</span>
+              <Cpu size={14} color={isN ? '#34d399' : '#fbbf24'} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Package:</span>
+                <span style={{ fontWeight: 600 }}>{packageType}</span>
+              </div>
+              <div style={{
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                padding: '4px 6px',
+                borderRadius: '4px',
+                fontFamily: 'JetBrains Mono',
+                fontSize: '10px',
+                color: '#38bdf8'
+              }}>
+                {pinout}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Max Voltage:</span>
+                <span style={{ fontFamily: 'JetBrains Mono' }}>{maxV}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Max Current:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#10b981' }}>{maxI}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Key Parameter:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#cbd5e1' }}>{metric}</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 7. Switches and Buttons */}
+      {(selectedComponent.type.startsWith('switch_')) && (() => {
+        if (selectedComponent.type === 'switch_dip') {
+          const dipPositions = selectedComponent.metadata?.dipPositions || [false, false, false, false];
+          const nibbleVal = (dipPositions[0] ? 1 : 0) +
+                            (dipPositions[1] ? 2 : 0) +
+                            (dipPositions[2] ? 4 : 0) +
+                            (dipPositions[3] ? 8 : 0);
+
+          return (
+            <div className="prop-section" style={{ borderLeft: '3px solid #dc2626', paddingLeft: '8px', backgroundColor: 'rgba(220, 38, 38, 0.04)' }}>
+              <div className="prop-section-title">
+                <span style={{ color: '#f87171', fontWeight: 600 }}>4-Position Rocker DIP Switch</span>
+                <Sliders size={14} color="#f87171" />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', fontSize: '11px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Binary Value:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', color: '#38bdf8', fontWeight: 700 }}>
+                  0b{dipPositions.map((p) => (p ? '1' : '0')).reverse().join('')} (0x{nibbleVal.toString(16).toUpperCase()})
+                </span>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '6px' }}>
+                {dipPositions.map((closed, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    className="action-btn"
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      padding: '6px 2px',
+                      backgroundColor: closed ? 'rgba(239, 68, 68, 0.25)' : 'rgba(15, 23, 42, 0.6)',
+                      borderColor: closed ? '#ef4444' : '#334155',
+                      color: closed ? '#ffffff' : '#94a3b8'
+                    }}
+                    onClick={() => {
+                      const updated = [...dipPositions];
+                      updated[idx] = !updated[idx];
+                      onUpdateComponent({
+                        ...selectedComponent,
+                        metadata: {
+                          ...selectedComponent.metadata,
+                          dipPositions: updated,
+                        },
+                      });
+                    }}
+                  >
+                    <span style={{ fontSize: '9px', fontWeight: 600 }}>POLE {idx + 1}</span>
+                    <strong style={{ fontSize: '11px', marginTop: '2px', color: closed ? '#fca5a5' : '#64748b' }}>
+                      {closed ? 'ON' : 'OFF'}
+                    </strong>
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+        }
+
+        // Tactile, Toggle, Slide switches
+        const isClosed = selectedComponent.metadata?.switchClosed;
+        let switchLabel = 'Tactile Push Button (6×6mm)';
+        let onText = 'PRESSED (Closed)';
+        let offText = 'RELEASED (Open)';
+
+        if (selectedComponent.type === 'switch_toggle') {
+          switchLabel = 'SPDT Toggle Switch';
+          onText = 'CLOSED (ON)';
+          offText = 'OPEN (OFF)';
+        } else if (selectedComponent.type === 'switch_slide') {
+          switchLabel = 'SPDT Slide Switch';
+          onText = 'POSITION 2 (Right)';
+          offText = 'POSITION 1 (Left)';
+        }
+
+        return (
+          <div className="prop-section" style={{ borderLeft: `3px solid ${isClosed ? '#10b981' : '#64748b'}`, paddingLeft: '8px', backgroundColor: isClosed ? 'rgba(16, 185, 129, 0.04)' : 'rgba(100, 116, 139, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: isClosed ? '#34d399' : '#cbd5e1', fontWeight: 600 }}>{switchLabel}</span>
+              <Power size={14} color={isClosed ? '#34d399' : '#cbd5e1'} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '11px' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Contact State:</span>
+                <span style={{
+                  color: isClosed ? '#34d399' : '#94a3b8',
+                  fontWeight: 700,
+                  fontFamily: 'JetBrains Mono'
+                }}>
+                  {isClosed ? onText : offText}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                className="action-btn"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  padding: '7px 10px',
+                  backgroundColor: isClosed ? '#059669' : '#1e293b',
+                  borderColor: isClosed ? '#10b981' : '#334155',
+                  color: '#ffffff',
+                  fontWeight: 600,
+                  fontSize: '11px',
+                  borderRadius: '5px'
+                }}
+                onClick={() => {
+                  onUpdateComponent({
+                    ...selectedComponent,
+                    metadata: {
+                      ...selectedComponent.metadata,
+                      switchClosed: !isClosed,
+                    },
+                  });
+                }}
+              >
+                {isClosed ? <ToggleRight size={16} /> : <ToggleLeft size={16} />}
+                <span>Click to Toggle State ({isClosed ? 'Open' : 'Close'})</span>
+              </button>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 8. Glass Cartridge Fuse */}
+      {selectedComponent.type === 'fuse' && (() => {
+        const isBlown = selectedComponent.metadata?.fuseBlown;
+        return (
+          <div className="prop-section" style={{ borderLeft: `3px solid ${isBlown ? '#ef4444' : '#10b981'}`, paddingLeft: '8px', backgroundColor: isBlown ? 'rgba(239, 68, 68, 0.05)' : 'rgba(16, 185, 129, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: isBlown ? '#ef4444' : '#10b981', fontWeight: 600 }}>Glass Cartridge Fuse (5×20mm)</span>
+              <Shield size={14} color={isBlown ? '#ef4444' : '#10b981'} />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Rating:</span>
+                <span style={{ fontFamily: 'JetBrains Mono', fontWeight: 600 }}>250 V AC/DC | 2.0 A Fast-Blow</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Element Condition:</span>
+                <strong style={{
+                  color: isBlown ? '#ef4444' : '#10b981',
+                  fontFamily: 'JetBrains Mono'
+                }}>
+                  {isBlown ? '⚠ BLOWN (Open Circuit ∞Ω)' : '✓ INTACT (Conducting 0Ω)'}
+                </strong>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="action-btn"
+              style={{
+                width: '100%',
+                padding: '6px',
+                fontSize: '11px',
+                fontWeight: 600,
+                backgroundColor: isBlown ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)',
+                borderColor: isBlown ? '#ef4444' : '#10b981',
+                color: isBlown ? '#f87171' : '#34d399',
+              }}
+              onClick={() => {
+                onUpdateComponent({
+                  ...selectedComponent,
+                  metadata: {
+                    ...selectedComponent.metadata,
+                    fuseBlown: !isBlown,
+                  },
+                });
+              }}
+            >
+              {isBlown ? '🔄 Reset / Replace Fuse' : '⚡ Simulate Overcurrent Blow'}
+            </button>
+          </div>
+        );
+      })()}
+
+      {/* 9. Integrated Circuits (Generic DIP, Op-Amp, Logic Gate, Optocoupler) */}
+      {(selectedComponent.type.startsWith('ic_')) && (() => {
+        if (selectedComponent.type === 'ic_dip_generic') {
+          const pinCount = selectedComponent.metadata?.icPinCount || 16;
+          const label = selectedComponent.metadata?.icLabel || 'CUSTOM IC';
+
+          return (
+            <div className="prop-section" style={{ borderLeft: '3px solid #38bdf8', paddingLeft: '8px', backgroundColor: 'rgba(56, 189, 248, 0.04)' }}>
+              <div className="prop-section-title">
+                <span style={{ color: '#38bdf8', fontWeight: 600 }}>Dual Inline Package (DIP IC)</span>
+                <Cpu size={14} color="#38bdf8" />
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '11px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Pin Count:</span>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {DIP_PIN_COUNTS.map((pc) => (
+                      <button
+                        key={pc}
+                        type="button"
+                        className="action-btn"
+                        style={{
+                          fontSize: '9.5px',
+                          padding: '3px 6px',
+                          backgroundColor: pinCount === pc ? 'rgba(56, 189, 248, 0.25)' : undefined,
+                          borderColor: pinCount === pc ? '#38bdf8' : undefined,
+                          color: pinCount === pc ? '#38bdf8' : undefined,
+                          fontWeight: pinCount === pc ? 700 : 400
+                        }}
+                        onClick={() => {
+                          onUpdateComponent({
+                            ...selectedComponent,
+                            metadata: {
+                              ...selectedComponent.metadata,
+                              icPinCount: pc,
+                            },
+                          });
+                        }}
+                      >
+                        {pc}p
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                  <span style={{ color: 'var(--text-muted)' }}>Laser Top Marking:</span>
+                  <input
+                    type="text"
+                    value={label}
+                    style={{
+                      padding: '4px 6px',
+                      fontSize: '11px',
+                      fontFamily: 'JetBrains Mono',
+                      backgroundColor: 'var(--bg-input, #1e293b)',
+                      border: '1px solid var(--border-subtle, #334155)',
+                      borderRadius: '4px',
+                      color: '#ffffff'
+                    }}
+                    onChange={(e) => {
+                      onUpdateComponent({
+                        ...selectedComponent,
+                        metadata: {
+                          ...selectedComponent.metadata,
+                          icLabel: e.target.value,
+                        },
+                      });
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        let icTitle = 'LM358 Dual Low-Power Op-Amp';
+        let icPkg = 'DIP-8';
+        let icDesc = 'Dual high-gain frequency-compensated operational amplifiers';
+        let pinMap = 'Pin 1: Out A | 2: In- A | 3: In+ A | 4: GND | 5: In+ B | 6: In- B | 7: Out B | 8: VCC';
+
+        if (selectedComponent.type === 'ic_logic_gate') {
+          icTitle = '74HC00 Quad 2-Input NAND Gate';
+          icPkg = 'DIP-14';
+          icDesc = 'High-Speed CMOS Logic with 4 independent NAND gates';
+          pinMap = '1: 1A | 2: 1B | 3: 1Y | 4: 2A | 5: 2B | 6: 2Y | 7: GND | 8: 3Y | 9: 3A | 10: 3B | 11: 4Y | 12: 4A | 13: 4B | 14: VCC';
+        } else if (selectedComponent.type === 'ic_optocoupler') {
+          icTitle = 'PC817 Optocoupler Isolator';
+          icPkg = 'DIP-4';
+          icDesc = 'GaAs IR emitter diode optically coupled to phototransistor (5000Vrms isolation)';
+          pinMap = 'Pin 1: Anode (+) | Pin 2: Cathode (-) | Pin 3: Emitter | Pin 4: Collector';
+        }
+
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #06b6d4', paddingLeft: '8px', backgroundColor: 'rgba(6, 182, 212, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#22d3ee', fontWeight: 600 }}>{icTitle}</span>
+              <Cpu size={14} color="#22d3ee" />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '11px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ color: 'var(--text-muted)' }}>Package:</span>
+                <span style={{ fontWeight: 600, color: '#e2e8f0' }}>{icPkg}</span>
+              </div>
+              <p style={{ margin: 0, color: 'var(--text-muted)', lineHeight: '1.4' }}>
+                {icDesc}
+              </p>
+              <div style={{
+                backgroundColor: 'rgba(0,0,0,0.35)',
+                padding: '6px',
+                borderRadius: '4px',
+                fontFamily: 'JetBrains Mono',
+                fontSize: '9.5px',
+                color: '#38bdf8',
+                lineHeight: '1.4'
+              }}>
+                {pinMap}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Phase 3: Mechanical Assembly & Joints Section */}
       <div className="prop-section">

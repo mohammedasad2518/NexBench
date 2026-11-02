@@ -1,5 +1,6 @@
 export type ComponentCategory = 
   | 'development_boards'
+  | 'basic_electronics'
   | 'prototyping'
   | 'wires_cables'
   | 'connectors_accessories'
@@ -47,6 +48,48 @@ export type ComponentType =
   | 'connector_jst_xh'
   | 'dc_barrel_jack'
   | 'breadboard_psu_module'
+  // Phase 2 Basic Electronic Components
+  // A. Resistors
+  | 'resistor_fixed'
+  | 'resistor_variable'
+  | 'potentiometer_rotary'
+  // B. Capacitors
+  | 'capacitor_ceramic'
+  | 'capacitor_electrolytic'
+  // C. Inductors and Crystals
+  | 'inductor'
+  | 'crystal_oscillator'
+  // D. Diodes
+  | 'diode_rectifier'
+  | 'diode_zener'
+  | 'diode_schottky'
+  // E. LEDs
+  | 'led_red'
+  | 'led_green'
+  | 'led_blue'
+  | 'led_yellow'
+  | 'led_white'
+  | 'led_rgb'
+  | 'led_ir'
+  // F. Optical
+  | 'photodiode'
+  // G. Transistors & MOSFETs
+  | 'transistor_npn'
+  | 'transistor_pnp'
+  | 'mosfet_n_channel'
+  | 'mosfet_p_channel'
+  // H. Switches
+  | 'switch_tactile'
+  | 'switch_toggle'
+  | 'switch_slide'
+  | 'switch_dip'
+  // I. Protection
+  | 'fuse'
+  // J. Integrated Circuits
+  | 'ic_dip_generic'
+  | 'ic_opamp'
+  | 'ic_logic_gate'
+  | 'ic_optocoupler'
   // Existing Subsystems
   | 'chassis' 
   | 'dc_motor' 
@@ -93,6 +136,30 @@ export interface Component3D {
     lineSensorReadingAO?: number; // Phase 8A: Real-time analog output (0 - 1023)
     lineSensorReflectance?: number; // Phase 8A: Real-time floor reflectance (0.0 - 1.0)
     servoAngle?: number; // Phase 9B: Servo angle in degrees (0 - 180)
+    // Phase 2: Electronic Component Parameters
+    resistance?: number; // Resistance in Ohms (e.g. 220, 1000, 10000)
+    resistanceLabel?: string; // Formatted resistance (e.g. '220Ω', '1kΩ')
+    wiperPercent?: number; // Potentiometer / trimpot wiper percentage (0 - 100)
+    capacitance?: string; // Capacitance label (e.g. '100nF', '10µF')
+    capacitanceLabel?: string; // Detailed capacitance label (e.g. '100 nF (104)')
+    capacitanceFarads?: number; // Numeric capacitance in Farads
+    isPolarized?: boolean; // Polarized capacitor / diode
+    inductance?: string; // Inductance label (e.g. '10µH', '1mH')
+    inductanceLabel?: string; // Formatted inductance label (e.g. '100 µH (1.5A)')
+    crystalFreq?: string; // Crystal oscillator frequency (e.g. '16MHz')
+    switchClosed?: boolean; // Push button / toggle switch contact state (true = conducting, false = open)
+    dipPositions?: boolean[]; // DIP switch 4-pole contact array
+    fuseBlown?: boolean; // Fuse state (true = open-circuit, false = intact)
+    rgbCommonMode?: 'common_cathode' | 'common_anode'; // RGB LED common terminal polarity
+    rgbR?: number; // RGB red channel (0 - 255)
+    rgbG?: number; // RGB green channel (0 - 255)
+    rgbB?: number; // RGB blue channel (0 - 255)
+    rgbRed?: number; // RGB red slider value
+    rgbGreen?: number; // RGB green slider value
+    rgbBlue?: number; // RGB blue slider value
+    icPinCount?: number; // Generic DIP IC pin count (8, 14, 16, 28)
+    icLabel?: string; // Custom laser part marking for generic IC
+    icPinLabels?: Record<number, string>; // Custom pin labels for Generic IC
   };
 }
 

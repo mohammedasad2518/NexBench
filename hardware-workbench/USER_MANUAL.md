@@ -225,6 +225,45 @@ Phase 1 introduces a scalable catalog architecture covering 33 newly defined ele
    - **Terminals & Plugs:** 2-Pin Screw Terminal Block (5.08mm, 16A), 2-Pin Shrouded JST-XH Header, 2.1mm DC Barrel Jack.
    - **Breadboard Power Supply Module (MB102):** Dual independent 3.3V/5V rails, push-button power latch, and DC barrel input.
 
+### Phase 2 Basic Electronic Components Library
+Phase 2 expands the component catalog with **31 fundamental discrete and integrated electronic components**, bringing the total library to **74 components** across 5 primary categories and 10 electronic subcategories:
+
+1. **Resistors and Variable Resistors:**
+   - **Fixed Resistor (`resistor_fixed`):** 1/4W 5% axial leaded resistor with 11 standard selectable EIA resistance values (100Ω, 220Ω, 330Ω, 470Ω, 1kΩ, 2.2kΩ, 4.7kΩ, 10kΩ, 47kΩ, 100kΩ, 1MΩ) and dynamic 4-band EIA color coding rendered directly in 3D.
+   - **Trimpot (`resistor_variable`):** 10kΩ miniature cermet potentiometer with brass tuning screw and interactive 0–100% wiper adjustment.
+   - **Rotary Potentiometer (`potentiometer_rotary`):** Panel-mount 10kΩ potentiometer with knurled shaft, rotating pointer notch, and real-time analog voltage divider simulation (0–1023 ADC / 0–5V).
+2. **Capacitors:**
+   - **Ceramic Disc Capacitor (`capacitor_ceramic`):** Non-polarized 50V MLCC/disc capacitor (10pF to 1µF) for high-frequency bypass and IC rail decoupling.
+   - **Aluminum Electrolytic Capacitor (`capacitor_electrolytic`):** Polarized 25V radial capacitor (1µF to 1000µF) with top pressure relief vent and negative polarity indicator stripe.
+3. **Inductors and Crystals:**
+   - **Toroidal Power Inductor (`inductor`):** 100µH (1.5A saturation current) toroidal ferrite core with wound enameled copper turns for DC-DC converters and ripple filtering.
+   - **Quartz Crystal (`crystal_oscillator`):** 16.000MHz precision resonator in HC-49/S low-profile metal canister for MCU system clock generation.
+4. **Diodes:**
+   - **Standard Rectifier Diode (`diode_rectifier`):** 1N4007 (1000V PRV, 1A) in DO-41 package with silver cathode stripe for reverse polarity and inductive flyback protection.
+   - **Zener Diode (`diode_zener`):** 1N4733A (5.1V 1W) in translucent glass DO-35 package with black band for voltage regulation and overvoltage clamping.
+   - **Schottky Diode (`diode_schottky`):** 1N5819 (40V 1A) with ultra-low forward drop (~0.35V) for high-efficiency power path isolation.
+5. **Light Emitting Diodes (LEDs):**
+   - **Monochrome LEDs:** 5mm radial diffused LEDs in Red (`led_red`), Green (`led_green`), Blue (`led_blue`), Yellow (`led_yellow`), and White (`led_white`) with flat cathode notch and dynamic emissive glow + point light simulation.
+   - **Infrared LED (`led_ir`):** 940nm near-infrared emitter with dark blue smoke lens for remote control and opto-interrupter beams.
+   - **RGB LED (`led_rgb`):** 4-pin diffused LED supporting Common Cathode / Common Anode modes and 3-channel (R, G, B) color mixing.
+6. **Optical Components:**
+   - **Silicon Photodiode (`photodiode`):** Clear dome detector with visible dark silicon sensor die for reverse-bias optical sensing (400–1100nm, peak 850nm).
+7. **Transistors and MOSFETs:**
+   - **Bipolar Junction Transistors (BJTs):** 2N3904 NPN (`transistor_npn`) and 2N3906 PNP (`transistor_pnp`) in classic D-shaped TO-92 packages (Emitter-Base-Collector).
+   - **Power MOSFETs:** IRF540N N-Channel (`mosfet_n_channel`, 100V 33A 44mΩ) and IRF9540 P-Channel (`mosfet_p_channel`, -100V -23A 117mΩ) in TO-220 packages with metal heatsink tabs (Gate-Drain-Source).
+8. **Switches and Buttons:**
+   - **Tactile Push Button (`switch_tactile`):** 6×6mm momentary Normally Open pushbutton with center plunger and 4 dual-paired breadboard pins.
+   - **Toggle Switch (`switch_toggle`):** SPDT bat lever switch with threaded collar and 3 solder terminals.
+   - **Slide Switch (`switch_slide`):** Miniature SPDT slide switch with sliding black actuator knob.
+   - **DIP Switch (`switch_dip`):** 4-position rocker switch with red body box and independent bit actuation (0b0000 to 0b1111).
+9. **Circuit Protection:**
+   - **Glass Cartridge Fuse (`fuse`):** 5×20mm fast-acting 250V 2A fuse with clear glass tube, nickel ferrules, and visual blown scorch mark simulation.
+10. **Integrated Circuits (DIP):**
+    - **Dual Op-Amp (`ic_opamp`):** LM358 in DIP-8 package with pin-1 notch and dot.
+    - **Quad NAND Gate (`ic_logic_gate`):** 74HC00 high-speed CMOS in DIP-14 package.
+    - **Optocoupler (`ic_optocoupler`):** PC817 GaAs IR LED + phototransistor in DIP-4 package with 5,000Vrms isolation.
+    - **Generic DIP IC (`ic_dip_generic`):** Configurable 8, 14, 16, or 28-pin DIP package with custom laser top marking.
+
 ### Point-and-Click Wiring Workflow
 1. Hover over any component to reveal its glowing connection terminals.
 2. Click the source terminal (e.g. Arduino `D5`). A flexible bezier preview wire appears anchored to your cursor.
@@ -382,7 +421,7 @@ Tuning parameters can be adjusted via interactive sliders and saved as reusable 
 
 ## 12. Verification & Test Metrics
 
-The Hardware Workbench test suite contains **11 automated test suites** covering unit, mathematical, AST runtime, kinematic, and persistence layers:
+The Hardware Workbench test suite contains **12 automated test suites** covering unit, mathematical, AST runtime, kinematic, and persistence layers:
 
 ```
 ================================================================
@@ -400,9 +439,10 @@ Hardware Workbench Automated Regression Verification Summary
 10. test_phase9c_persistence.ts   :   82 /   82 PASS (100%)
 11. test_phase10_reliability.ts   :  319 /  319 PASS (100%)
 12. test_phase1_component_library.ts: 285 / 285 PASS (100%)
+13. test_phase2_electronic_components.ts: 361 / 361 PASS (100%)
 ----------------------------------------------------------------
-TOTAL ASSERTIONS PASSING         : 1025 / 1025 PASS (100%)
-PRODUCTION BUNDLE BUILD STATUS   : 0 Errors (built in ~1.10s)
+TOTAL ASSERTIONS PASSING         : 1386 / 1386 PASS (100%)
+PRODUCTION BUNDLE BUILD STATUS   : 0 Errors (built in ~1.09s)
 ================================================================
 ```
 

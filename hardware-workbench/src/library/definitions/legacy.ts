@@ -272,3 +272,4 @@ export const LEGACY_DEFINITIONS: HardwareComponentDefinition[] = [
     tags: ['wall', 'barrier', 'obstacle', 'shield'],
   },
 ];
+

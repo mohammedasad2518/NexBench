@@ -4,6 +4,7 @@ import { buildBoardMesh } from '../library/models/boardModels';
 import { buildPrototypingMesh } from '../library/models/prototypingModels';
 import { buildWireMesh } from '../library/models/wireModels';
 import { buildAccessoryMesh } from '../library/models/accessoryModels';
+import { buildElectronicMesh } from '../library/models/electronicModels';
 
 const BOARD_TYPES = new Set([
   'arduino',
@@ -48,6 +49,40 @@ const ACCESSORY_TYPES = new Set([
   'connector_jst_xh',
   'dc_barrel_jack',
   'breadboard_psu_module',
+]);
+
+const ELECTRONIC_TYPES = new Set([
+  'resistor_fixed',
+  'resistor_variable',
+  'potentiometer_rotary',
+  'capacitor_ceramic',
+  'capacitor_electrolytic',
+  'inductor',
+  'crystal_oscillator',
+  'diode_rectifier',
+  'diode_zener',
+  'diode_schottky',
+  'led_red',
+  'led_green',
+  'led_blue',
+  'led_yellow',
+  'led_white',
+  'led_rgb',
+  'led_ir',
+  'photodiode',
+  'transistor_npn',
+  'transistor_pnp',
+  'mosfet_n_channel',
+  'mosfet_p_channel',
+  'switch_tactile',
+  'switch_toggle',
+  'switch_slide',
+  'switch_dip',
+  'fuse',
+  'ic_dip_generic',
+  'ic_opamp',
+  'ic_logic_gate',
+  'ic_optocoupler',
 ]);
 
 export function createComponentMesh(component: Component3D): THREE.Group {
@@ -96,6 +131,11 @@ export function createComponentMesh(component: Component3D): THREE.Group {
     }
   } else if (ACCESSORY_TYPES.has(component.type)) {
     const subGroup = buildAccessoryMesh(component, baseMaterial, darkMaterial, metalMaterial, whiteMaterial);
+    while (subGroup.children.length > 0) {
+      group.add(subGroup.children[0]);
+    }
+  } else if (ELECTRONIC_TYPES.has(component.type)) {
+    const subGroup = buildElectronicMesh(component, baseMaterial, darkMaterial, metalMaterial, whiteMaterial);
     while (subGroup.children.length > 0) {
       group.add(subGroup.children[0]);
     }
@@ -598,7 +638,8 @@ export function createComponentMesh(component: Component3D): THREE.Group {
     THREE.MathUtils.degToRad(component.rotation.y),
     THREE.MathUtils.degToRad(component.rotation.z)
   );
-  group.scale.set(component.scale.x, component.scale.y, component.scale.z);
+  const scale = component.scale || { x: 1, y: 1, z: 1 };
+  group.scale.set(scale.x, scale.y, scale.z);
 
   return group;
 }

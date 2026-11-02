@@ -3,6 +3,36 @@ import { ARDUINO_UNO_PINS, ARDUINO_MEGA_PINS, ARDUINO_NANO_PINS, ESP8266_NODEMCU
 import { BREADBOARD_FULL_DEFINITION, BREADBOARD_HALF_DEFINITION, BREADBOARD_MINI_DEFINITION, PERFBOARD_PINS, STRIPBOARD_PINS, PCB_PROTOTYPE_PINS } from '../library/definitions/breadboards';
 import { WIRE_M2M_PINS } from '../library/definitions/wires';
 import { HEADER_MALE_PINS, HEADER_FEMALE_PINS, TERMINAL_BLOCK_PINS, CONNECTOR_JST_PINS, DC_BARREL_JACK_PINS, BREADBOARD_PSU_PINS } from '../library/definitions/accessories';
+import { 
+  FIXED_RESISTOR_PINS, 
+  TRIMPOT_PINS, 
+  ROTARY_POTENTIOMETER_PINS, 
+  CERAMIC_CAPACITOR_PINS, 
+  ELECTROLYTIC_CAPACITOR_PINS, 
+  INDUCTOR_PINS, 
+  CRYSTAL_OSCILLATOR_PINS, 
+  FUSE_PINS 
+} from '../library/definitions/passives';
+import { 
+  DIODE_PINS, 
+  STANDARD_LED_PINS, 
+  RGB_LED_PINS, 
+  PHOTODIODE_PINS 
+} from '../library/definitions/diodesLeds';
+import { 
+  TO92_BJT_PINS, 
+  TO220_MOSFET_PINS, 
+  OPAMP_LM358_PINS, 
+  LOGIC_7400_PINS, 
+  OPTOCOUPLER_PC817_PINS, 
+  IC_DIP_GENERIC_PINS 
+} from '../library/definitions/semiconductors';
+import { 
+  TACTILE_SWITCH_PINS, 
+  TOGGLE_SWITCH_PINS, 
+  SLIDE_SWITCH_PINS, 
+  DIP_SWITCH_PINS 
+} from '../library/definitions/switches';
 
 export const COMPONENT_TERMINALS: Record<ComponentType, TerminalDefinition[]> = {
   // Phase 1 Development Boards
@@ -365,6 +395,58 @@ export const COMPONENT_TERMINALS: Record<ComponentType, TerminalDefinition[]> = 
   connector_jst_xh: CONNECTOR_JST_PINS,
   dc_barrel_jack: DC_BARREL_JACK_PINS,
   breadboard_psu_module: BREADBOARD_PSU_PINS,
+
+  // Phase 2 Basic Electronic Components
+  // A. Resistors
+  resistor_fixed: FIXED_RESISTOR_PINS,
+  resistor_variable: TRIMPOT_PINS,
+  potentiometer_rotary: ROTARY_POTENTIOMETER_PINS,
+
+  // B. Capacitors
+  capacitor_ceramic: CERAMIC_CAPACITOR_PINS,
+  capacitor_electrolytic: ELECTROLYTIC_CAPACITOR_PINS,
+
+  // C. Inductors and Crystals
+  inductor: INDUCTOR_PINS,
+  crystal_oscillator: CRYSTAL_OSCILLATOR_PINS,
+
+  // D. Diodes
+  diode_rectifier: DIODE_PINS,
+  diode_zener: DIODE_PINS,
+  diode_schottky: DIODE_PINS,
+
+  // E. LEDs
+  led_red: STANDARD_LED_PINS,
+  led_green: STANDARD_LED_PINS,
+  led_blue: STANDARD_LED_PINS,
+  led_yellow: STANDARD_LED_PINS,
+  led_white: STANDARD_LED_PINS,
+  led_rgb: RGB_LED_PINS,
+  led_ir: STANDARD_LED_PINS,
+
+  // F. Optical
+  photodiode: PHOTODIODE_PINS,
+
+  // G. Transistors & MOSFETs
+  transistor_npn: TO92_BJT_PINS,
+  transistor_pnp: TO92_BJT_PINS,
+  mosfet_n_channel: TO220_MOSFET_PINS,
+  mosfet_p_channel: TO220_MOSFET_PINS,
+
+  // H. Switches
+  switch_tactile: TACTILE_SWITCH_PINS,
+  switch_toggle: TOGGLE_SWITCH_PINS,
+  switch_slide: SLIDE_SWITCH_PINS,
+  switch_dip: DIP_SWITCH_PINS,
+
+  // I. Protection
+  fuse: FUSE_PINS,
+
+  // J. Integrated Circuits
+  ic_dip_generic: IC_DIP_GENERIC_PINS,
+  ic_opamp: OPAMP_LM358_PINS,
+  ic_logic_gate: LOGIC_7400_PINS,
+  ic_optocoupler: OPTOCOUPLER_PC817_PINS,
 
   // Non-electrical mechanical components have no terminals
   chassis: [],

@@ -4,10 +4,14 @@ import { DEVELOPMENT_BOARDS_DEFINITIONS } from './definitions/boards';
 import { PROTOTYPING_DEFINITIONS } from './definitions/breadboards';
 import { WIRES_DEFINITIONS } from './definitions/wires';
 import { ACCESSORIES_DEFINITIONS } from './definitions/accessories';
+import { PASSIVE_ELECTRONICS_DEFINITIONS } from './definitions/passives';
+import { DIODES_LEDS_DEFINITIONS } from './definitions/diodesLeds';
+import { SEMICONDUCTORS_DEFINITIONS } from './definitions/semiconductors';
+import { SWITCHES_DEFINITIONS } from './definitions/switches';
 import { LEGACY_DEFINITIONS } from './definitions/legacy';
 
 // ============================================================================
-// Phase 1 Component Registry: Singleton & Lookup Manager
+// Phase 1 & 2 Component Registry: Singleton & Lookup Manager
 // ============================================================================
 
 class HardwareComponentRegistry {
@@ -19,6 +23,10 @@ class HardwareComponentRegistry {
       ...PROTOTYPING_DEFINITIONS,
       ...WIRES_DEFINITIONS,
       ...ACCESSORIES_DEFINITIONS,
+      ...PASSIVE_ELECTRONICS_DEFINITIONS,
+      ...DIODES_LEDS_DEFINITIONS,
+      ...SEMICONDUCTORS_DEFINITIONS,
+      ...SWITCHES_DEFINITIONS,
       ...LEGACY_DEFINITIONS,
     ]);
   }

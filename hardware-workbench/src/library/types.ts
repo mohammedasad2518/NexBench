@@ -4,9 +4,10 @@ import type { Vector3D, TerminalCategory, ComponentType } from '../types/workben
 // Phase 1: Hardware Component Library Foundation — Type Definitions
 // ============================================================================
 
-/** Core Hardware Categories as specified in Phase 1 */
+/** Core Hardware Categories as specified in Phase 1 & Phase 2 */
 export type HardwareCategory = 
   | 'development_boards'
+  | 'basic_electronics'
   | 'prototyping'
   | 'wires_cables'
   | 'connectors_accessories'
@@ -25,6 +26,17 @@ export type HardwareSubcategory =
   | 'Raspberry Pi'
   | 'STM32'
   | 'Other Boards'
+  // Phase 2 Basic Electronics
+  | 'Resistors'
+  | 'Capacitors'
+  | 'Inductors and Crystals'
+  | 'Diodes'
+  | 'LEDs'
+  | 'Optical Components'
+  | 'Transistors'
+  | 'Switches'
+  | 'Protection'
+  | 'Integrated Circuits'
   // Breadboards & Prototyping
   | 'Solderless Breadboards'
   | 'Perfboards & Stripboards'
@@ -156,6 +168,65 @@ export interface WireCharacteristicsDefinition {
   defaultLengthMm?: number;
 }
 
+/** Resistor Specific Characteristics */
+export interface ResistorCharacteristics {
+  resistanceOhms: number;
+  tolerancePercent?: number;
+  powerRatingWatts?: number;
+  isVariable?: boolean;
+  supportedValues?: number[];
+  colorBands?: string[];
+}
+
+/** Capacitor Specific Characteristics */
+export interface CapacitorCharacteristics {
+  capacitanceFarads: number;
+  capacitanceLabel: string;
+  ratedVoltageVolts: number;
+  isPolarized: boolean;
+  dielectric: 'ceramic' | 'electrolytic' | 'film' | 'tantalum';
+}
+
+/** Diode & LED Specific Characteristics */
+export interface DiodeCharacteristics {
+  diodeType: 'rectifier' | 'zener' | 'schottky' | 'led' | 'photodiode';
+  forwardVoltage: number;
+  maxCurrentMa: number;
+  reverseBreakdownVoltage?: number;
+  color?: string;
+  wavelengthNm?: number;
+  isRgb?: boolean;
+  rgbCommon?: 'common_cathode' | 'common_anode';
+}
+
+/** Transistor & MOSFET Specific Characteristics */
+export interface TransistorCharacteristics {
+  transistorType: 'npn_bjt' | 'pnp_bjt' | 'n_channel_mosfet' | 'p_channel_mosfet';
+  packageType: 'to92' | 'to220';
+  maxVoltageV: number;
+  maxCurrentA: number;
+  pinOrder: string[]; // e.g. ['E', 'B', 'C'] or ['G', 'D', 'S']
+}
+
+/** Switch Specific Characteristics */
+export interface SwitchCharacteristics {
+  switchType: 'pushbutton' | 'toggle' | 'slide' | 'dip';
+  poles: number;
+  throws: number;
+  isMomentary: boolean;
+  positionsCount?: number;
+  initialClosed?: boolean;
+}
+
+/** Integrated Circuit Specific Characteristics */
+export interface ICCharacteristics {
+  packageType: 'dip4' | 'dip8' | 'dip14' | 'dip16' | 'dip28';
+  pinCount: number;
+  pinLabels: Record<number, string>;
+  family?: string;
+  isConfigurable?: boolean;
+}
+
 /** Complete Structured Hardware Component Definition */
 export interface HardwareComponentDefinition {
   /** Unique component ID / catalog identifier */
@@ -204,4 +275,16 @@ export interface HardwareComponentDefinition {
   breadboardConfig?: BreadboardConnectivityDefinition;
   /** Wire characteristics if this is a wire or cable */
   wireConfig?: WireCharacteristicsDefinition;
+  /** Resistor configuration */
+  resistorConfig?: ResistorCharacteristics;
+  /** Capacitor configuration */
+  capacitorConfig?: CapacitorCharacteristics;
+  /** Diode/LED configuration */
+  diodeConfig?: DiodeCharacteristics;
+  /** Transistor configuration */
+  transistorConfig?: TransistorCharacteristics;
+  /** Switch configuration */
+  switchConfig?: SwitchCharacteristics;
+  /** Integrated circuit configuration */
+  icConfig?: ICCharacteristics;
 }

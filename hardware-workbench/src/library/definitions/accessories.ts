@@ -242,3 +242,4 @@ export const ACCESSORIES_DEFINITIONS: HardwareComponentDefinition[] = [
   DC_BARREL_JACK_DEFINITION,
   BREADBOARD_PSU_DEFINITION,
 ];
+

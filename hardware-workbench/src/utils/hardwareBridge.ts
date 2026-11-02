@@ -163,7 +163,9 @@ export function evaluateCircuitState(
   }
 
   // 2. Evaluate LED Circuits
-  const ledComponents = components.filter((c) => c.type === 'led' && c.visible);
+  const ledComponents = components.filter(
+    (c) => (c.type === 'led' || c.type.startsWith('led_')) && c.visible
+  );
   for (const led of ledComponents) {
     // Find wires attached to this LED
     const ledWires = wires.filter(
@@ -373,7 +375,13 @@ export function evaluateCircuitState(
   }
 
   // 5. Evaluate Potentiometers (Analog voltage divider)
-  const potComponents = components.filter((c) => c.type === 'potentiometer' && c.visible);
+  const potComponents = components.filter(
+    (c) =>
+      (c.type === 'potentiometer' ||
+        c.type === 'potentiometer_rotary' ||
+        c.type === 'resistor_variable') &&
+      c.visible
+  );
   for (const pot of potComponents) {
     const potWires = wires.filter(
       (w) => w.fromComponentId === pot.id || w.toComponentId === pot.id
@@ -390,9 +398,9 @@ export function evaluateCircuitState(
       const otherTerm = isFromPot ? wire.toTerminalId : wire.fromTerminalId;
 
       if (otherCompId === arduinoComp.id) {
-        if (potTerm === 'VCC' && isPowerTerminal(otherTerm)) {
+        if ((potTerm === 'VCC' || potTerm === 'TERM_2') && isPowerTerminal(otherTerm)) {
           vccConnected = true;
-        } else if (potTerm === 'GND' && isGroundTerminal(otherTerm)) {
+        } else if ((potTerm === 'GND' || potTerm === 'TERM_1') && isGroundTerminal(otherTerm)) {
           gndConnected = true;
         } else if (potTerm === 'WIPER') {
           const pin = resolveTerminalPinNumber(otherTerm);

@@ -48,12 +48,13 @@ type SidebarTab = 'components' | 'hierarchy' | 'templates';
 const CATEGORY_TABS: { id: HardwareCategory | 'all'; label: string; icon: any }[] = [
   { id: 'all', label: 'All', icon: Layers },
   { id: 'development_boards', label: 'Dev Boards', icon: Cpu },
+  { id: 'basic_electronics', label: 'Electronics', icon: Zap },
   { id: 'prototyping', label: 'Breadboards', icon: Grid },
   { id: 'wires_cables', label: 'Wires', icon: Cable },
   { id: 'connectors_accessories', label: 'Connectors', icon: Plug },
-  { id: 'actuator', label: 'Motors', icon: Zap },
+  { id: 'actuator', label: 'Motors', icon: Box },
   { id: 'sensor', label: 'Sensors', icon: Radio },
-  { id: 'structural', label: 'Structure', icon: Box },
+  { id: 'structural', label: 'Structure', icon: Layers },
   { id: 'output', label: 'Outputs', icon: Lightbulb },
 ];
 
