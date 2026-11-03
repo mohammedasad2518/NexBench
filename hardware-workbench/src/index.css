@@ -4441,3 +4441,965 @@ select:focus {
 
 
 
+
+
+/* ============================================================================ */
+/* BENCHTWIN HIGH-PRECISION CAD WORKSPACE REDESIGN STYLES                       */
+/* ============================================================================ */
+
+body.theme-light, :root {
+  --bt-header-bg: #ffffff;
+  --bt-subtoolbar-bg: #f8fafc;
+  --bt-border: #e2e8f0;
+  --bt-border-subtle: #f1f5f9;
+  --bt-text-primary: #0f172a;
+  --bt-text-secondary: #475569;
+  --bt-text-muted: #94a3b8;
+  --bt-sidebar-bg: #ffffff;
+  --bt-card-bg: #ffffff;
+  --bt-card-hover: #f8fafc;
+  --bt-viewport-bg: #f1f5f9;
+  --bt-sim-green: #059669;
+  --bt-sim-green-hover: #047857;
+  --bt-accent-blue: #0284c7;
+  --bt-pill-bg: #f1f5f9;
+  --bt-pill-border: #e2e8f0;
+}
+
+body.theme-dark {
+  --bt-header-bg: #0f172a;
+  --bt-subtoolbar-bg: #1e293b;
+  --bt-border: #334155;
+  --bt-border-subtle: #1e293b;
+  --bt-text-primary: #f8fafc;
+  --bt-text-secondary: #cbd5e1;
+  --bt-text-muted: #64748b;
+  --bt-sidebar-bg: #0f172a;
+  --bt-card-bg: #1e293b;
+  --bt-card-hover: #334155;
+  --bt-viewport-bg: #0b0f19;
+  --bt-sim-green: #10b981;
+  --bt-sim-green-hover: #059669;
+  --bt-accent-blue: #38bdf8;
+  --bt-pill-bg: #1e293b;
+  --bt-pill-border: #334155;
+}
+
+/* 1. Header Wrapper & Top Bar */
+.benchtwin-header-wrapper {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bt-header-bg);
+  border-bottom: 1px solid var(--bt-border);
+  z-index: 50;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.benchtwin-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 14px;
+  background-color: var(--bt-header-bg);
+  border-bottom: 1px solid var(--bt-border-subtle);
+}
+
+.header-left-cluster,
+.header-center-tabs,
+.header-right-cluster {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bt-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--bt-text-secondary);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bt-icon-btn:hover {
+  background-color: var(--bt-pill-bg);
+  color: var(--bt-text-primary);
+  border-color: var(--bt-border);
+}
+
+/* File Dropdown */
+.bt-dropdown-container {
+  position: relative;
+}
+
+.bt-file-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--bt-text-primary);
+  background: var(--bt-pill-bg);
+  border: 1px solid var(--bt-border);
+  cursor: pointer;
+}
+
+.bt-dropdown-menu {
+  position: absolute;
+  top: 34px;
+  left: 0;
+  background: var(--bt-header-bg);
+  border: 1px solid var(--bt-border);
+  border-radius: 8px;
+  padding: 4px;
+  min-width: 170px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bt-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--bt-text-primary);
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: left;
+  background: transparent;
+  border: none;
+}
+
+.bt-dropdown-item:hover {
+  background-color: var(--bt-pill-bg);
+}
+
+.bt-dropdown-item.text-red {
+  color: #ef4444;
+}
+
+.bt-dropdown-divider {
+  height: 1px;
+  background-color: var(--bt-border);
+  margin: 4px 0;
+}
+
+/* Project Pill */
+.bt-project-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 30px;
+  padding: 0 10px;
+  background-color: var(--bt-pill-bg);
+  border: 1px solid var(--bt-border);
+  border-radius: 6px;
+  font-size: 12.5px;
+}
+
+.bt-project-icon {
+  color: var(--bt-accent-blue);
+}
+
+.bt-title-text {
+  font-weight: 600;
+  color: var(--bt-text-primary);
+  cursor: pointer;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bt-version-badge {
+  font-size: 10.5px;
+  color: var(--bt-text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.bt-saved-status {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--bt-text-muted);
+  margin-left: 2px;
+}
+
+.status-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.status-bullet.bullet-saved {
+  background-color: #10b981;
+}
+
+.status-bullet.bullet-dirty {
+  background-color: #f59e0b;
+}
+
+/* Workflow Tabs */
+.bt-tabs-pill-group {
+  display: flex;
+  align-items: center;
+  background-color: var(--bt-pill-bg);
+  border: 1px solid var(--bt-border);
+  border-radius: 6px;
+  padding: 2px;
+}
+
+.bt-tab-btn {
+  padding: 4px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  border-radius: 4px;
+  color: var(--bt-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bt-tab-btn.active {
+  background-color: var(--bt-header-bg);
+  color: var(--bt-text-primary);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* Simulate Button (Prominent Green) */
+.bt-simulate-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: var(--bt-sim-green);
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.3);
+  transition: all 0.15s ease;
+}
+
+.bt-simulate-btn:hover {
+  background-color: var(--bt-sim-green-hover);
+}
+
+.bt-simulate-btn.simulating {
+  background-color: #d97706;
+}
+
+/* Pro & Header Actions */
+.bt-pro-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bt-text-primary);
+  background: var(--bt-pill-bg);
+  border: 1px solid var(--bt-border);
+  cursor: pointer;
+}
+
+.sparkle-icon {
+  color: #8b5cf6;
+}
+
+.bt-pro-soon-badge {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #d97706;
+  background-color: #fef3c7;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.bt-pill-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bt-text-secondary);
+  background: transparent;
+  border: 1px solid var(--bt-border);
+  cursor: pointer;
+}
+
+.bt-pill-action-btn:hover {
+  background-color: var(--bt-pill-bg);
+  color: var(--bt-text-primary);
+}
+
+.bt-pill-action-btn.primary {
+  background-color: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+.bt-theme-switch {
+  display: flex;
+  align-items: center;
+  width: 44px;
+  height: 24px;
+  background-color: var(--bt-border);
+  border-radius: 12px;
+  padding: 2px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.theme-toggle-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+
+.bt-theme-switch.dark .theme-toggle-handle {
+  transform: translateX(20px);
+  background-color: #1e293b;
+  color: #f8fafc;
+}
+
+/* 2. Floating Sub-Header Tool Bar */
+.benchtwin-subtoolbar {
+  display: flex;
+  align-items: center;
+  height: 38px;
+  padding: 0 12px;
+  background-color: var(--bt-subtoolbar-bg);
+  border-bottom: 1px solid var(--bt-border);
+  gap: 8px;
+  overflow-x: auto;
+}
+
+.subtoolbar-handle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background-color: var(--bt-header-bg);
+  border: 1px solid var(--bt-border);
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bt-text-secondary);
+}
+
+.subtoolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.subtoolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bt-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.subtoolbar-btn:hover {
+  background-color: var(--bt-border-subtle);
+  color: var(--bt-text-primary);
+}
+
+.subtoolbar-btn.active {
+  background-color: var(--bt-header-bg);
+  color: var(--bt-accent-blue);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-weight: 600;
+}
+
+.subtoolbar-divider {
+  width: 1px;
+  height: 18px;
+  background-color: var(--bt-border);
+  margin: 0 4px;
+}
+
+/* 3. Left Sidebar (BenchTwin Style) */
+.bt-left-sidebar {
+  width: 290px;
+  min-width: 290px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bt-sidebar-bg);
+  border-right: 1px solid var(--bt-border);
+  overflow: hidden;
+}
+
+.bt-sidebar-top-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--bt-border);
+  background-color: var(--bt-header-bg);
+}
+
+.bt-subtab-btn {
+  flex: 1;
+  padding: 9px 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bt-text-secondary);
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  text-align: center;
+}
+
+.bt-subtab-btn.active {
+  color: var(--bt-text-primary);
+  font-weight: 600;
+  border-bottom-color: var(--bt-accent-blue);
+}
+
+.bt-parts-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 12px;
+  overflow-y: auto;
+}
+
+.bt-pane-header {
+  margin-bottom: 10px;
+}
+
+.bt-pane-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--bt-text-primary);
+  margin: 0 0 2px 0;
+}
+
+.bt-pane-subtitle {
+  font-size: 11px;
+  color: var(--bt-text-muted);
+  margin: 0;
+}
+
+/* Search Box */
+.bt-search-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.bt-search-glass {
+  position: absolute;
+  left: 10px;
+  color: var(--bt-text-muted);
+  pointer-events: none;
+}
+
+.bt-search-field {
+  width: 100%;
+  height: 32px;
+  padding: 0 28px 0 32px;
+  background-color: var(--bt-pill-bg);
+  border: 1px solid var(--bt-border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--bt-text-primary);
+  outline: none;
+}
+
+.bt-search-field:focus {
+  border-color: var(--bt-accent-blue);
+  background-color: var(--bt-header-bg);
+}
+
+.bt-search-clear {
+  position: absolute;
+  right: 8px;
+  background: transparent;
+  border: none;
+  color: var(--bt-text-muted);
+  cursor: pointer;
+}
+
+/* Category Filter Pills */
+.bt-category-pills-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.bt-category-pills-row::-webkit-scrollbar {
+  height: 4px;
+}
+
+.bt-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  background-color: var(--bt-pill-bg);
+  border: 1px solid var(--bt-border);
+  color: var(--bt-text-secondary);
+  cursor: pointer;
+}
+
+.bt-pill.active {
+  background-color: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  font-weight: 600;
+}
+
+.bt-pill-count {
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+/* Simulated Only Row */
+.bt-simulated-only-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 11.5px;
+  color: var(--bt-text-secondary);
+}
+
+.bt-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.bt-parts-count-header {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bt-text-muted);
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+}
+
+/* Parts Cards Grid */
+.bt-parts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bt-part-card {
+  display: flex;
+  gap: 10px;
+  padding: 8px;
+  background-color: var(--bt-card-bg);
+  border: 1px solid var(--bt-border);
+  border-radius: 8px;
+  cursor: grab;
+  transition: all 0.15s ease;
+}
+
+.bt-part-card:hover {
+  background-color: var(--bt-card-hover);
+  border-color: var(--bt-accent-blue);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.bt-card-thumbnail-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  flex-shrink: 0;
+}
+
+body.theme-dark .bt-card-thumbnail-box {
+  background-color: #1e293b;
+  border-color: #334155;
+}
+
+.bt-card-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+  min-width: 0;
+}
+
+.bt-card-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bt-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bt-card-subtitle {
+  font-size: 11px;
+  color: var(--bt-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bt-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.bt-simulated-tag {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--bt-text-muted);
+  background-color: var(--bt-pill-bg);
+  border: 1px solid var(--bt-border);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+}
+
+.bt-card-price {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--bt-text-secondary);
+}
+
+/* 4. Viewport Top-Left & Top-Right Overlays */
+.bt-viewport-top-left {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.bt-hud-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 28px;
+  padding: 0 10px;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  border: 1px solid var(--bt-border);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--bt-text-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+body.theme-dark .bt-hud-pill {
+  background-color: rgba(15, 23, 42, 0.85);
+}
+
+.bt-pill-icon {
+  color: var(--bt-accent-blue);
+}
+
+.bt-pill-counter {
+  color: var(--bt-text-muted);
+  font-size: 11px;
+}
+
+/* 3D ViewCube Gizmo Widget */
+.bt-viewcube-widget {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  perspective: 400px;
+}
+
+.bt-viewcube-box {
+  width: 44px;
+  height: 44px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.1s ease-out;
+}
+
+.bt-cube-face {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  background: rgba(248, 250, 252, 0.95);
+  border: 1px solid #94a3b8;
+  font-size: 9px;
+  font-weight: 700;
+  color: #334155;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.bt-cube-face:hover {
+  background: #38bdf8;
+  color: #ffffff;
+}
+
+.bt-face-front  { transform: rotateY(0deg) translateZ(22px); }
+.bt-face-back   { transform: rotateY(180deg) translateZ(22px); }
+.bt-face-right  { transform: rotateY(90deg) translateZ(22px); }
+.bt-face-left   { transform: rotateY(-90deg) translateZ(22px); }
+.bt-face-top    { transform: rotateX(90deg) translateZ(22px); }
+.bt-face-bottom { transform: rotateX(-90deg) translateZ(22px); }
+
+.bt-viewcube-axes {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.axis-dot {
+  font-size: 9px;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.axis-x { color: #ef4444; }
+.axis-y { color: #22c55e; }
+.axis-z { color: #3b82f6; }
+
+/* 5. Floating Bottom Camera Pill */
+.bt-floating-camera-bar {
+  position: absolute;
+  bottom: 34px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--bt-border);
+  border-radius: 20px;
+  padding: 2px 6px;
+  gap: 2px;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+body.theme-dark .bt-floating-camera-bar {
+  background-color: rgba(15, 23, 42, 0.88);
+}
+
+.bt-cam-pill-btn {
+  padding: 4px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--bt-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bt-cam-pill-btn:hover {
+  background-color: var(--bt-border);
+  color: var(--bt-text-primary);
+}
+
+/* 6. Fixed Bottom Status Bar */
+.bt-bottom-status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  gap: 10px;
+  background-color: var(--bt-header-bg);
+  border-top: 1px solid var(--bt-border);
+  font-size: 11px;
+  color: var(--bt-text-muted);
+  z-index: 50;
+}
+
+.bt-status-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.bt-status-cell strong {
+  color: var(--bt-text-primary);
+}
+
+.bt-status-cell.text-selection {
+  color: var(--bt-text-primary);
+  font-weight: 500;
+}
+
+.bt-status-cell.status-ok {
+  color: #059669;
+  font-weight: 600;
+  margin-left: auto;
+}
+
+.bt-status-sep {
+  color: var(--bt-border);
+}
+
+/* 7. Right Inspector Panel — Circuit Checks Accordion */
+.bt-properties-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.bt-inspector-top-banner {
+  padding: 8px 12px;
+  font-size: 11.5px;
+  color: var(--bt-text-muted);
+  border-bottom: 1px solid var(--bt-border);
+}
+
+.bt-circuit-checks-accordion {
+  border-bottom: 1px solid var(--bt-border);
+  background-color: var(--bt-header-bg);
+}
+
+.bt-circuit-checks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bt-checks-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bt-checks-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--bt-text-primary);
+}
+
+.bt-all-clear-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: #059669;
+  background-color: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.bt-circuit-checks-body {
+  padding: 0 12px 10px 12px;
+}
+
+.bt-empty-checks-text {
+  font-size: 11px;
+  color: var(--bt-text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.bt-active-checks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bt-check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--bt-text-secondary);
+}
+
+/* Param Badge Button */
+.param-badge-btn {
+  padding: 3px 8px;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: var(--bt-text-secondary);
+  background-color: var(--bt-pill-bg);
+  border: 1px solid var(--bt-border);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.param-badge-btn.active {
+  background-color: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  font-weight: 600;
+}

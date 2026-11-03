@@ -5,6 +5,7 @@ import { buildPrototypingMesh } from '../library/models/prototypingModels';
 import { buildWireMesh } from '../library/models/wireModels';
 import { buildAccessoryMesh } from '../library/models/accessoryModels';
 import { buildElectronicMesh } from '../library/models/electronicModels';
+import { buildSensorMesh } from '../library/models/sensorModels';
 
 const BOARD_TYPES = new Set([
   'arduino',
@@ -85,6 +86,28 @@ const ELECTRONIC_TYPES = new Set([
   'ic_optocoupler',
 ]);
 
+const SENSOR_TYPES = new Set([
+  'sensor_dht11',
+  'sensor_dht22',
+  'sensor_ds18b20',
+  'sensor_lm35',
+  'sensor_ntc_thermistor',
+  'sensor_bmp180',
+  'sensor_bmp280',
+  'sensor_bme280',
+  'sensor_mq2',
+  'sensor_mq3',
+  'sensor_mq4',
+  'sensor_mq7',
+  'sensor_mq135',
+  'sensor_soil_moisture',
+  'sensor_rain',
+  'sensor_water_level',
+  'sensor_ldr',
+  'sensor_uv',
+  'sensor_sound',
+]);
+
 export function createComponentMesh(component: Component3D): THREE.Group {
   const group = new THREE.Group();
   group.name = component.id;
@@ -136,6 +159,11 @@ export function createComponentMesh(component: Component3D): THREE.Group {
     }
   } else if (ELECTRONIC_TYPES.has(component.type)) {
     const subGroup = buildElectronicMesh(component, baseMaterial, darkMaterial, metalMaterial, whiteMaterial);
+    while (subGroup.children.length > 0) {
+      group.add(subGroup.children[0]);
+    }
+  } else if (SENSOR_TYPES.has(component.type)) {
+    const subGroup = buildSensorMesh(component, baseMaterial, darkMaterial, metalMaterial, whiteMaterial);
     while (subGroup.children.length > 0) {
       group.add(subGroup.children[0]);
     }

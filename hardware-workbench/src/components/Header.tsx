@@ -1,32 +1,39 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useRef, useState, useEffect, type ChangeEvent } from 'react';
 import { 
   Move, 
   RotateCw, 
-  Maximize2, 
-  Magnet, 
-  Download, 
-  Upload, 
-  RotateCcw, 
-  Eye, 
-  EyeOff,
-  Zap,
-  Unplug,
-  Play,
-  Pause,
-  RotateCcw as ResetSimIcon,
-  Wrench,
-  Code,
-  Save,
-  FolderOpen,
-  FilePlus2,
-  Cpu,
-  Home,
-  Check,
-  Edit2,
-  PanelLeft,
-  PanelRight,
-  PanelBottom,
-  LayoutGrid
+  RotateCcw,
+  Play, 
+  Pause, 
+  FilePlus2, 
+  Check, 
+  LayoutGrid,
+  Columns,
+  ChevronDown,
+  Sparkles,
+  Search,
+  Share2,
+  Smartphone,
+  LogIn,
+  MessageSquare,
+  Sun,
+  Moon,
+  Box,
+  Circle,
+  Cylinder,
+  PenTool,
+  PlusSquare,
+  ArrowUpDown,
+  Layers,
+  Copy,
+  Trash2,
+  Maximize2,
+  Disc,
+  Link,
+  Settings,
+  Hammer,
+  Compass,
+  Sliders
 } from 'lucide-react';
 import type { TransformMode, RuntimeStatus } from '../types/workbench';
 import type { TrackType } from '../utils/floorTrack';
@@ -88,6 +95,10 @@ interface HeaderProps {
   onTrackTypeChange?: (track: TrackType) => void;
   // Camera View Angle
   onCameraPreset?: (view: 'perspective' | 'top' | 'front' | 'side' | 'reset') => void;
+  // Additional BenchTwin Subtoolbar actions
+  onDuplicateSelected?: () => void;
+  onDeleteSelected?: () => void;
+  onAddShape?: (shape: 'box' | 'cylinder' | 'sphere' | 'obstacle_box' | 'obstacle_wall') => void;
 }
 
 export const Header = ({
@@ -135,15 +146,50 @@ export const Header = ({
   isBottomCollapsed,
   onToggleBottom,
   onResetLayout,
-  trackType = 'oval',
+  trackType,
   onTrackTypeChange,
   onCameraPreset,
+  onDuplicateSelected,
+  onDeleteSelected,
+  onAddShape,
 }: HeaderProps) => {
+  void snapTranslate; void setSnapTranslate; void snapRotate; void setSnapRotate;
+  void runtimeStatus; void isSimulationPaused; void onResetSimulation; void lastSaveTime;
+  void componentCount; void wireCount; void attachmentCount; void selectedName;
+  void activeSourceInfo; void onCancelWiring; void isLeftCollapsed; void isRightCollapsed;
+  void isBottomCollapsed; void onToggleBottom; void onCameraPreset;
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(projectName);
+  const [isFileMenuOpen, setIsFileMenuOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isToolBarVisible, setIsToolBarVisible] = useState(true);
+  const fileMenuRef = useRef<HTMLDivElement>(null);
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+  // Close file menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (fileMenuRef.current && !fileMenuRef.current.contains(e.target as Node)) {
+        setIsFileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Theme switch effect
+  useEffect(() => {
+    if (isDarkMode) {
+      document.body.classList.remove('theme-light');
+      document.body.classList.add('theme-dark');
+    } else {
+      document.body.classList.remove('theme-dark');
+      document.body.classList.add('theme-light');
+    }
+  }, [isDarkMode]);
+
+  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -154,6 +200,7 @@ export const Header = ({
       reader.readAsText(file);
     }
     if (fileInputRef.current) fileInputRef.current.value = '';
+    setIsFileMenuOpen(false);
   };
 
   const handleTitleSubmit = () => {
@@ -163,473 +210,442 @@ export const Header = ({
     setIsEditingTitle(false);
   };
 
+  const activeWorkflowTab = isCodePanelOpen ? 'code' : isWiringMode ? 'wire' : 'build';
+
   return (
-    <header className="workbench-header-container">
+    <header className="benchtwin-header-wrapper">
       {/* ======================================================== */}
-      {/* 1. PRIMARY APPLICATION TOOLBAR (TOP ROW)                 */}
+      {/* 1. TOP BENCHTWIN HEADER ROW                              */}
       {/* ======================================================== */}
-      <div className="workbench-primary-bar">
-        {/* Left: Brand Identity, Home & Project Name */}
-        <div className="header-brand-cluster">
+      <div className="benchtwin-top-bar">
+        {/* Left Cluster: App Grid, Layout, File Menu, Undo, Redo */}
+        <div className="header-left-cluster">
           {onGoHome && (
             <button 
-              className="header-home-btn" 
+              className="bt-icon-btn" 
               onClick={onGoHome} 
-              title="Return to Welcome Page"
+              title="Home / Dashboard"
               id="btn-header-home"
             >
-              <Home size={15} />
+              <LayoutGrid size={16} />
             </button>
           )}
 
-          <div className="header-brand-logo">
-            <Cpu size={18} className="brand-icon-svg" />
-            <span className="brand-title-text">Hardware Workbench</span>
+          <button 
+            className="bt-icon-btn" 
+            title="Toggle Split View"
+            onClick={onToggleRight}
+          >
+            <Columns size={16} />
+          </button>
+
+          {/* File Menu Dropdown */}
+          <div className="bt-dropdown-container" ref={fileMenuRef}>
+            <button 
+              className="bt-file-btn" 
+              onClick={() => setIsFileMenuOpen(!isFileMenuOpen)}
+              id="btn-file-menu"
+            >
+              <span>File</span>
+              <ChevronDown size={13} className={`chevron-arrow ${isFileMenuOpen ? 'open' : ''}`} />
+            </button>
+
+            {isFileMenuOpen && (
+              <div className="bt-dropdown-menu">
+                <button 
+                  className="bt-dropdown-item" 
+                  onClick={() => { onNewProject(); setIsFileMenuOpen(false); }}
+                >
+                  <FilePlus2 size={14} />
+                  <span>New Project</span>
+                </button>
+                <button 
+                  className="bt-dropdown-item" 
+                  onClick={() => { onLoadProject(); setIsFileMenuOpen(false); }}
+                >
+                  <Search size={14} />
+                  <span>Open Project...</span>
+                </button>
+                <button 
+                  className="bt-dropdown-item" 
+                  onClick={() => { onSaveProject(); setIsFileMenuOpen(false); }}
+                >
+                  <Check size={14} />
+                  <span>Save Project</span>
+                </button>
+                <div className="bt-dropdown-divider" />
+                <button 
+                  className="bt-dropdown-item" 
+                  onClick={() => { onExport(); setIsFileMenuOpen(false); }}
+                >
+                  <span>Export JSON</span>
+                </button>
+                <button 
+                  className="bt-dropdown-item" 
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <span>Import JSON...</span>
+                </button>
+                <div className="bt-dropdown-divider" />
+                <button 
+                  className="bt-dropdown-item text-red" 
+                  onClick={() => { onReset(); setIsFileMenuOpen(false); }}
+                >
+                  <span>Reset Scene</span>
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="header-divider-v" />
+          <input
+            type="file"
+            ref={fileInputRef}
+            style={{ display: 'none' }}
+            accept=".json"
+            onChange={handleFileUpload}
+          />
 
-          {/* Editable Project Name */}
-          <div className="header-project-name-group">
+          {/* Undo / Redo */}
+          <button className="bt-icon-btn" title="Undo (Ctrl+Z)">
+            <RotateCcw size={15} />
+          </button>
+          <button className="bt-icon-btn" title="Redo (Ctrl+Y)">
+            <RotateCw size={15} />
+          </button>
+
+          {/* Project Name Pill */}
+          <div className="bt-project-pill">
+            <Box size={14} className="bt-project-icon" />
             {isEditingTitle ? (
-              <div className="inline-title-editor">
+              <div className="bt-title-editor">
                 <input
                   type="text"
-                  className="project-title-input"
+                  className="bt-title-input"
                   value={editedTitle}
                   onChange={(e) => setEditedTitle(e.target.value)}
                   onBlur={handleTitleSubmit}
                   onKeyDown={(e) => e.key === 'Enter' && handleTitleSubmit()}
                   autoFocus
                 />
-                <button className="title-confirm-btn" onClick={handleTitleSubmit}>
-                  <Check size={13} />
+                <button className="bt-title-save" onClick={handleTitleSubmit}>
+                  <Check size={12} />
                 </button>
               </div>
             ) : (
               <div 
-                className="project-title-display" 
+                className="bt-title-text"
                 onClick={() => { setEditedTitle(projectName); setIsEditingTitle(true); }}
                 title="Click to rename project"
-                id="header-project-title-label"
               >
-                <span className="project-name-text">{projectName || 'Untitled Project'}</span>
-                <Edit2 size={11} className="title-edit-pencil" />
+                <span>{projectName || 'NexBench Project'}</span>
               </div>
             )}
-
-            {isDirty ? (
-              <span className="dirty-indicator-pill" title="Project has unsaved modifications">
-                <span className="dirty-dot" />
-                <span>Unsaved</span>
-              </span>
-            ) : (
-              <span className="saved-indicator-pill" title={lastSaveTime ? `Last saved at ${lastSaveTime}` : 'All changes saved'}>
-                <Check size={11} />
-                <span>Saved</span>
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Center: Simulation Runtime & Clock Controls */}
-        <div className="header-simulation-cluster">
-          {/* Simulation Status Pill */}
-          <div className={`simulation-status-pill status-${runtimeStatus}`}>
-            <span className={`status-dot dot-${runtimeStatus}`} />
-            <span className="status-label">
-              {runtimeStatus === 'running' 
-                ? 'SIMULATION RUNNING' 
-                : runtimeStatus === 'paused' 
-                ? 'SIMULATION PAUSED' 
-                : runtimeStatus === 'error' 
-                ? 'RUNTIME ERROR' 
-                : 'ENGINE IDLE'}
+            <span className="bt-version-badge">v3.66.0</span>
+            <span className="bt-saved-status">
+              <span className={`status-bullet ${isDirty ? 'bullet-dirty' : 'bullet-saved'}`} />
+              <span>{isDirty ? 'Unsaved' : 'Saved'}</span>
             </span>
           </div>
+        </div>
 
-          {/* Physics Simulation Control Buttons */}
-          <div className="sim-buttons-group">
-            {!isSimulating ? (
-              <button
-                className="sim-btn sim-btn-play"
-                onClick={onStartSimulation}
-                title="Start Physics & Robot Simulation"
-                id="btn-header-start-sim"
-              >
-                <Play size={13} />
-                <span>Simulate</span>
-              </button>
+        {/* Center Workflow Tabs: Build, Wire, Code, Simulate */}
+        <div className="header-center-tabs">
+          <div className="bt-tabs-pill-group">
+            <button
+              className={`bt-tab-btn ${activeWorkflowTab === 'build' ? 'active' : ''}`}
+              onClick={() => {
+                setIsWiringMode(false);
+                setIsAssemblyMode(false);
+                setIsCodePanelOpen(false);
+              }}
+              id="tab-workflow-build"
+            >
+              Build
+            </button>
+            <button
+              className={`bt-tab-btn ${activeWorkflowTab === 'wire' ? 'active' : ''}`}
+              onClick={() => {
+                setIsWiringMode(true);
+                setIsAssemblyMode(false);
+                setIsCodePanelOpen(false);
+              }}
+              id="tab-workflow-wire"
+            >
+              Wire
+            </button>
+            <button
+              className={`bt-tab-btn ${activeWorkflowTab === 'code' ? 'active' : ''}`}
+              onClick={() => {
+                setIsCodePanelOpen(true);
+              }}
+              id="tab-workflow-code"
+            >
+              Code
+            </button>
+          </div>
+
+          {/* Prominent Emerald Simulate Button */}
+          <button
+            className={`bt-simulate-btn ${isSimulating ? 'simulating' : ''}`}
+            onClick={isSimulating ? onPauseSimulation : onStartSimulation}
+            id="btn-header-simulate"
+          >
+            {isSimulating ? (
+              <>
+                <Pause size={14} fill="currentColor" />
+                <span>Pause</span>
+              </>
             ) : (
               <>
-                <button
-                  className={`sim-btn ${isSimulationPaused ? 'sim-btn-resume' : 'sim-btn-pause'}`}
-                  onClick={onPauseSimulation}
-                  title={isSimulationPaused ? 'Resume Simulation' : 'Pause Simulation'}
-                  id="btn-header-pause-sim"
-                >
-                  {isSimulationPaused ? <Play size={13} /> : <Pause size={13} />}
-                  <span>{isSimulationPaused ? 'Resume' : 'Pause'}</span>
-                </button>
-                <button
-                  className="sim-btn sim-btn-reset"
-                  onClick={onResetSimulation}
-                  title="Reset Simulation Clock & Dynamic State"
-                  id="btn-header-reset-sim"
-                >
-                  <ResetSimIcon size={12} />
-                  <span>Reset</span>
-                </button>
+                <Play size={14} fill="currentColor" />
+                <span>Simulate</span>
               </>
             )}
-          </div>
+          </button>
+
+          <button 
+            className="bt-icon-btn" 
+            title="Settings & Workspace Preferences"
+            onClick={onResetLayout}
+          >
+            <Settings size={15} />
+          </button>
         </div>
 
-        {/* Right: Project Management & Panel Layout Controls */}
-        <div className="header-actions-cluster">
-          {/* Project Management Buttons */}
-          <div className="project-actions-group">
-            <button
-              className="action-pill-btn"
-              id="btn-new-project"
-              onClick={onNewProject}
-              title="Create New Project"
-            >
-              <FilePlus2 size={13} />
-              <span>New</span>
-            </button>
+        {/* Right Cluster: Pro Badge, Share, Get App, Login, Theme Toggle */}
+        <div className="header-right-cluster">
+          <button className="bt-pro-btn">
+            <Sparkles size={13} className="sparkle-icon" />
+            <span>What's in Pro</span>
+          </button>
 
-            <button
-              className="action-pill-btn"
-              id="btn-open-project"
-              onClick={onLoadProject}
-              title="Open Project / Templates / Calibration"
-            >
-              <FolderOpen size={13} />
-              <span>Open</span>
-            </button>
+          <span className="bt-pro-soon-badge">Pro Soon</span>
 
-            <button
-              className={`action-pill-btn ${isDirty ? 'btn-save-dirty' : ''}`}
-              id="btn-save-project"
-              onClick={onSaveProject}
-              title={isDirty ? 'Save Project Changes' : 'Project Saved'}
-            >
-              <Save size={13} />
-              <span>Save</span>
-              {isDirty && <span className="save-dirty-dot" />}
-            </button>
+          <button className="bt-icon-btn" title="View Options">
+            <Columns size={15} />
+          </button>
 
-            <button
-              className="action-pill-btn"
-              onClick={onReset}
-              title="Reset All Scene Components & Wires"
-              id="btn-reset-scene"
-            >
-              <RotateCcw size={13} />
-              <span>Reset Scene</span>
-            </button>
+          <button className="bt-icon-btn" title="Search Everything">
+            <Search size={15} />
+          </button>
 
-            <button
-              className="action-pill-btn"
-              onClick={() => fileInputRef.current?.click()}
-              title="Import Project Scene JSON"
-              id="btn-import-project"
-            >
-              <Upload size={13} />
-              <span>Import</span>
-            </button>
-            <input 
-              ref={fileInputRef} 
-              type="file" 
-              accept=".json" 
-              style={{ display: 'none' }} 
-              onChange={handleFileChange} 
-            />
+          <button className="bt-pill-action-btn" onClick={onExport}>
+            <Share2 size={13} />
+            <span>Share</span>
+          </button>
 
-            <button
-              className="action-pill-btn action-pill-export"
-              onClick={onExport}
-              title="Export Full Project Scene as JSON"
-              id="btn-export-project"
-            >
-              <Download size={13} />
-              <span>Export</span>
-            </button>
-          </div>
+          <button className="bt-pill-action-btn primary" onClick={onSaveProject}>
+            <span>Build it for real</span>
+          </button>
 
-          <div className="header-divider-v" />
+          <button className="bt-pill-action-btn outline">
+            <Smartphone size={13} />
+            <span>Get the app</span>
+          </button>
 
-          {/* Panel Layout Toggles */}
-          <div className="layout-toggles-group">
-            {onToggleLeft && (
-              <button
-                className={`layout-toggle-btn ${!isLeftCollapsed ? 'active' : ''}`}
-                onClick={onToggleLeft}
-                title={isLeftCollapsed ? 'Show Component & Hierarchy Sidebar' : 'Hide Sidebar'}
-                id="btn-toggle-left-panel"
-              >
-                <PanelLeft size={14} />
-              </button>
-            )}
-            {onToggleBottom && (
-              <button
-                className={`layout-toggle-btn ${!isBottomCollapsed ? 'active' : ''}`}
-                onClick={onToggleBottom}
-                title={isBottomCollapsed ? 'Show Code & Diagnostics Dock' : 'Hide Dock'}
-                id="btn-toggle-bottom-panel"
-              >
-                <PanelBottom size={14} />
-              </button>
-            )}
-            {onToggleRight && (
-              <button
-                className={`layout-toggle-btn ${!isRightCollapsed ? 'active' : ''}`}
-                onClick={onToggleRight}
-                title={isRightCollapsed ? 'Show Properties & Inspector' : 'Hide Inspector'}
-                id="btn-toggle-right-panel"
-              >
-                <PanelRight size={14} />
-              </button>
-            )}
-            {onResetLayout && (
-              <button
-                className="layout-toggle-btn"
-                onClick={onResetLayout}
-                title="Reset Panel Layout to Default"
-                id="btn-reset-layout"
-              >
-                <LayoutGrid size={14} />
-              </button>
-            )}
+          <button className="bt-pill-action-btn login">
+            <LogIn size={13} />
+            <span>Log in</span>
+          </button>
+
+          <button className="bt-icon-btn" title="Send Feedback">
+            <MessageSquare size={15} />
+          </button>
+
+          {/* Theme Toggle Pill Switch */}
+          <div 
+            className={`bt-theme-switch ${isDarkMode ? 'dark' : 'light'}`} 
+            onClick={() => setIsDarkMode(!isDarkMode)}
+            title="Toggle Light / Dark Mode"
+          >
+            <div className="theme-toggle-handle">
+              {isDarkMode ? <Moon size={11} /> : <Sun size={11} />}
+            </div>
           </div>
         </div>
       </div>
 
       {/* ======================================================== */}
-      {/* 2. SECONDARY CAD VIEWPORT & ASSEMBLY TOOL STRIP          */}
+      {/* 2. FLOATING SUB-HEADER TOOL BAR (BENCHTWIN CAD TOOLBAR)  */}
       {/* ======================================================== */}
-      <div className="workbench-secondary-bar">
-        {/* Left: Transform Mode Gizmo Controls */}
-        <div className="secondary-tools-left">
-          <div className="sub-tool-group">
-            <span className="sub-tool-label">MODE</span>
-            <button
-              className={`sub-tool-btn ${transformMode === 'translate' && !isWiringMode && !isAssemblyMode ? 'active' : ''}`}
-              onClick={() => {
-                setIsWiringMode(false);
-                setIsAssemblyMode(false);
-                setTransformMode('translate');
-              }}
-              title="Translate Gizmo [W]"
-              id="tool-translate-mode"
+      {isToolBarVisible && (
+        <div className="benchtwin-subtoolbar">
+          {/* Handle */}
+          <div className="subtoolbar-handle">
+            <span className="handle-label">Tool bar</span>
+            <Link size={12} className="handle-link-icon" />
+          </div>
+
+          {/* Section 1: Shapes */}
+          <div className="subtoolbar-group">
+            <button 
+              className="subtoolbar-btn" 
+              title="Add 3D Box Primitive"
+              onClick={() => onAddShape?.('obstacle_box')}
             >
-              <Move size={13} />
-              <span>Move</span>
+              <Box size={15} />
+              <span>Box</span>
             </button>
-            <button
-              className={`sub-tool-btn ${transformMode === 'rotate' && !isWiringMode && !isAssemblyMode ? 'active' : ''}`}
-              onClick={() => {
-                setIsWiringMode(false);
-                setIsAssemblyMode(false);
-                setTransformMode('rotate');
-              }}
-              title="Rotate Gizmo [E]"
-              id="tool-rotate-mode"
+            <button 
+              className="subtoolbar-btn" 
+              title="Add 3D Cylinder Primitive"
+              onClick={() => onAddShape?.('cylinder')}
             >
-              <RotateCw size={13} />
+              <Cylinder size={15} />
+              <span>Cylinder</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="Add 3D Sphere Primitive"
+              onClick={() => onAddShape?.('sphere')}
+            >
+              <Circle size={15} />
+              <span>Sphere</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="Add Hole / Mounting Cutout"
+              onClick={() => onAddShape?.('obstacle_wall')}
+            >
+              <Disc size={15} strokeDasharray="3 3" />
+              <span>Hole</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="2D Sketch on Mat"
+              onClick={() => onTrackTypeChange?.(trackType === 'oval' ? 'straight' : 'oval')}
+            >
+              <PenTool size={15} />
+              <span>Sketch</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="Browse Extended Shape Library"
+              onClick={onToggleLeft}
+            >
+              <PlusSquare size={15} />
+              <span>More shapes</span>
+            </button>
+          </div>
+
+          <div className="subtoolbar-divider" />
+
+          {/* Section 2: Transforms & Operations */}
+          <div className="subtoolbar-group">
+            <button 
+              className={`subtoolbar-btn ${transformMode === 'translate' ? 'active' : ''}`}
+              title="Move & Turn (Translation Gizmo) [W]"
+              onClick={() => setTransformMode('translate')}
+            >
+              <Move size={15} />
+              <span>Move & turn</span>
+            </button>
+            <button 
+              className={`subtoolbar-btn ${transformMode === 'scale' ? 'active' : ''}`}
+              title="Lift & Size (Scale Gizmo) [R]"
+              onClick={() => setTransformMode('scale')}
+            >
+              <ArrowUpDown size={15} />
+              <span>Lift & size</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="Group Selected Components"
+            >
+              <Layers size={15} />
+              <span>Group</span>
+            </button>
+            <button 
+              className={`subtoolbar-btn ${transformMode === 'rotate' ? 'active' : ''}`}
+              title="Rotate Component [E]"
+              onClick={() => setTransformMode('rotate')}
+            >
+              <RotateCw size={15} />
               <span>Rotate</span>
             </button>
-            <button
-              className={`sub-tool-btn ${transformMode === 'scale' && !isWiringMode && !isAssemblyMode ? 'active' : ''}`}
-              onClick={() => {
-                setIsWiringMode(false);
-                setIsAssemblyMode(false);
-                setTransformMode('scale');
-              }}
-              title="Scale Gizmo [R]"
-              id="tool-scale-mode"
+            <button 
+              className="subtoolbar-btn" 
+              title="Duplicate Component (Ctrl+D)"
+              onClick={onDuplicateSelected}
+            >
+              <Copy size={15} />
+              <span>Copy</span>
+            </button>
+            <button 
+              className="subtoolbar-btn text-danger" 
+              title="Delete Selected Component [Del]"
+              onClick={onDeleteSelected}
+            >
+              <Trash2 size={15} />
+              <span>Delete</span>
+            </button>
+          </div>
+
+          <div className="subtoolbar-divider" />
+
+          {/* Section 3: Engineering Tools */}
+          <div className="subtoolbar-group">
+            <button 
+              className="subtoolbar-btn" 
+              title="Drill Hole / Mechanical Mounting"
+              onClick={() => setIsAssemblyMode(!isAssemblyMode)}
+            >
+              <Hammer size={15} />
+              <span>Drill</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="Fasteners & Screws"
+              onClick={() => setIsAssemblyMode(true)}
+            >
+              <Settings size={15} />
+              <span>Screws</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="Mirror Part Across Axis"
+            >
+              <Compass size={15} />
+              <span>Mirror</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="Insert Component Part from Library"
+              onClick={onToggleLeft}
+            >
+              <PlusSquare size={15} />
+              <span>Insert part</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="Precision Caliper & Ruler"
+              onClick={() => setGridVisible(!gridVisible)}
+            >
+              <Sliders size={15} />
+              <span>Measure</span>
+            </button>
+            <button 
+              className="subtoolbar-btn" 
+              title="All Engineering Tools"
+              onClick={onResetLayout}
+            >
+              <LayoutGrid size={15} />
+              <span>All tools</span>
+            </button>
+          </div>
+
+          {/* Subtoolbar collapse toggle */}
+          <div className="subtoolbar-right-controls">
+            <button 
+              className="subtoolbar-btn icon-only" 
+              onClick={() => setIsToolBarVisible(false)}
+              title="Hide Tool Bar"
             >
               <Maximize2 size={13} />
-              <span>Scale</span>
             </button>
-          </div>
-
-          <div className="header-divider-v-sub" />
-
-          {/* Interactive Tools: Wiring & Assembly */}
-          <div className="sub-tool-group">
-            <button
-              className={`sub-tool-btn ${isWiringMode ? 'active-wiring-sub' : ''}`}
-              onClick={() => {
-                setIsAssemblyMode(false);
-                setIsWiringMode(!isWiringMode);
-              }}
-              title="Toggle Point-to-Point Terminal Wiring"
-              id="tool-toggle-wiring"
-            >
-              <Zap size={13} style={{ color: isWiringMode ? '#38bdf8' : undefined }} />
-              <span>{isWiringMode ? 'Wiring: Active' : 'Wire Tool'}</span>
-            </button>
-
-            <button
-              className={`sub-tool-btn ${isAssemblyMode ? 'active-assembly-sub' : ''}`}
-              onClick={() => {
-                setIsWiringMode(false);
-                setIsAssemblyMode(!isAssemblyMode);
-              }}
-              title="Toggle Mechanical Assembly & Mount Points"
-              id="tool-toggle-assembly"
-            >
-              <Wrench size={13} style={{ color: isAssemblyMode ? '#38bdf8' : undefined }} />
-              <span>{isAssemblyMode ? 'Assemble: Active' : 'Assemble'}</span>
-            </button>
-
-            <button
-              className={`sub-tool-btn ${isCodePanelOpen ? 'active-code-sub' : ''}`}
-              onClick={() => setIsCodePanelOpen(!isCodePanelOpen)}
-              title="Toggle Arduino Code Editor & Serial Monitor"
-              id="tool-toggle-code-panel"
-            >
-              <Code size={13} style={{ color: isCodePanelOpen ? '#38bdf8' : undefined }} />
-              <span>Code Dock</span>
-            </button>
-          </div>
-
-          <div className="header-divider-v-sub" />
-
-          {/* Snapping & Grid Options */}
-          <div className="sub-tool-group">
-            <button
-              className={`sub-tool-btn ${snapTranslate ? 'active' : ''}`}
-              onClick={() => setSnapTranslate(!snapTranslate)}
-              title="Toggle Grid Snapping (0.5 units)"
-              id="tool-toggle-snap"
-            >
-              <Magnet size={13} />
-              <span>Snap 0.5u</span>
-            </button>
-            <button
-              className={`sub-tool-btn ${snapRotate ? 'active' : ''}`}
-              onClick={() => setSnapRotate(!snapRotate)}
-              title="Toggle Angle Snapping (15 degrees)"
-              id="tool-toggle-rotate-snap"
-            >
-              <RotateCw size={13} />
-              <span>15°</span>
-            </button>
-            <button
-              className={`sub-tool-btn ${gridVisible ? 'active' : ''}`}
-              onClick={() => setGridVisible(!gridVisible)}
-              title="Toggle CAD Grid Floor"
-              id="tool-toggle-grid"
-            >
-              {gridVisible ? <Eye size={13} /> : <EyeOff size={13} />}
-              <span>Grid</span>
-            </button>
-          </div>
-
-          {/* Track Environment Dropdown */}
-          {onTrackTypeChange && (
-            <>
-              <div className="header-divider-v-sub" />
-              <div className="sub-tool-group">
-                <span className="sub-tool-label">TRACK:</span>
-                <select
-                  className="sub-tool-select"
-                  value={trackType}
-                  onChange={(e) => onTrackTypeChange(e.target.value as TrackType)}
-                  title="Select Floor Track Environment"
-                  id="select-track-type"
-                >
-                  <option value="oval">Oval Course</option>
-                  <option value="straight">Straight Track</option>
-                  <option value="wavy">Wavy Track</option>
-                  <option value="none">Plain Surface</option>
-                </select>
-              </div>
-            </>
-          )}
-
-          {/* Camera View Angle Presets */}
-          {onCameraPreset && (
-            <>
-              <div className="header-divider-v-sub" />
-              <div className="sub-tool-group">
-                <span className="sub-tool-label">VIEW:</span>
-                <button 
-                  className="sub-tool-btn sub-camera-btn" 
-                  onClick={() => onCameraPreset('perspective')}
-                  title="3D Perspective Camera"
-                >
-                  3D
-                </button>
-                <button 
-                  className="sub-tool-btn sub-camera-btn" 
-                  onClick={() => onCameraPreset('top')}
-                  title="Top 2D Plan View"
-                >
-                  Top
-                </button>
-                <button 
-                  className="sub-tool-btn sub-camera-btn" 
-                  onClick={() => onCameraPreset('front')}
-                  title="Front Elevation View"
-                >
-                  Front
-                </button>
-                <button 
-                  className="sub-tool-btn sub-camera-btn" 
-                  onClick={() => onCameraPreset('reset')}
-                  title="Reset Camera to Default"
-                >
-                  <RotateCcw size={11} />
-                </button>
-              </div>
-            </>
-          )}
-        </div>
-
-        {/* Right: Scene Metric Badges & Live Status */}
-        <div className="secondary-tools-right">
-          {/* Active Wiring / Assembly Banner if engaged */}
-          {isWiringMode && (
-            <div className="sub-wiring-banner">
-              {activeSourceInfo ? (
-                <>
-                  <span className="banner-pulse-dot" />
-                  <span>From: <strong>{activeSourceInfo.compName} ({activeSourceInfo.termName})</strong> → Click target pin</span>
-                  {onCancelWiring && (
-                    <button className="sub-banner-cancel" onClick={onCancelWiring} title="Cancel wire">
-                      <Unplug size={11} />
-                      <span>Cancel</span>
-                    </button>
-                  )}
-                </>
-              ) : (
-                <span>Click any terminal to start wire route</span>
-              )}
-            </div>
-          )}
-
-          {isAssemblyMode && (
-            <div className="sub-assembly-banner">
-              <span>🔧 Click mount point to attach parts</span>
-            </div>
-          )}
-
-          <div className="scene-counts-cluster">
-            <span className="scene-count-badge">Parts: <strong>{componentCount}</strong></span>
-            <span className="scene-count-badge">Wires: <strong style={{ color: '#38bdf8' }}>{wireCount}</strong></span>
-            <span className="scene-count-badge">Joints: <strong style={{ color: '#a855f7' }}>{attachmentCount}</strong></span>
-            {selectedName && (
-              <span className="scene-selected-badge" title="Selected Component">
-                {selectedName}
-              </span>
-            )}
           </div>
         </div>
-      </div>
+      )}
     </header>
   );
 };

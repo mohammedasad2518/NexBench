@@ -1,6 +1,7 @@
 export type ComponentCategory = 
   | 'development_boards'
   | 'basic_electronics'
+  | 'environmental_sensors'
   | 'prototyping'
   | 'wires_cables'
   | 'connectors_accessories'
@@ -90,6 +91,32 @@ export type ComponentType =
   | 'ic_opamp'
   | 'ic_logic_gate'
   | 'ic_optocoupler'
+  // Phase 3 Environmental & Measurement Sensors
+  // 1. Temperature & Humidity Sensors
+  | 'sensor_dht11'
+  | 'sensor_dht22'
+  | 'sensor_ds18b20'
+  | 'sensor_lm35'
+  | 'sensor_ntc_thermistor'
+  // 2. Pressure & Weather Sensors
+  | 'sensor_bmp180'
+  | 'sensor_bmp280'
+  | 'sensor_bme280'
+  // 3. Gas & Air Quality Sensors
+  | 'sensor_mq2'
+  | 'sensor_mq3'
+  | 'sensor_mq4'
+  | 'sensor_mq7'
+  | 'sensor_mq135'
+  // 4. Soil & Water Sensors
+  | 'sensor_soil_moisture'
+  | 'sensor_rain'
+  | 'sensor_water_level'
+  // 5. Light & UV Sensors
+  | 'sensor_ldr'
+  | 'sensor_uv'
+  // 6. Sound Sensor
+  | 'sensor_sound'
   // Existing Subsystems
   | 'chassis' 
   | 'dc_motor' 
@@ -160,6 +187,29 @@ export interface Component3D {
     icPinCount?: number; // Generic DIP IC pin count (8, 14, 16, 28)
     icLabel?: string; // Custom laser part marking for generic IC
     icPinLabels?: Record<number, string>; // Custom pin labels for Generic IC
+    // Phase 3: Environmental & Measurement Sensor Parameters
+    temperatureC?: number;
+    humidityPercent?: number;
+    pressureHpa?: number;
+    altitudeM?: number;
+    gasPpm?: number;
+    gasThresholdPpm?: number;
+    heaterActive?: boolean;
+    moisturePercent?: number;
+    soilSensorType?: 'resistive' | 'capacitive';
+    calDryRaw?: number;
+    calWetRaw?: number;
+    rainIntensityPercent?: number;
+    waterLevelPercent?: number;
+    lightLux?: number;
+    uvIndex?: number;
+    soundIntensityPercent?: number;
+    soundThresholdPercent?: number;
+    ds18b20Resolution?: 9 | 10 | 11 | 12;
+    ds18b20Package?: 'to92' | 'waterproof_probe';
+    ntcNominalResistance?: number;
+    ntcBeta?: number;
+    i2cAddressHex?: string;
   };
 }
 

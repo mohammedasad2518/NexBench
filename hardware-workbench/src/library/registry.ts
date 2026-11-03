@@ -8,10 +8,15 @@ import { PASSIVE_ELECTRONICS_DEFINITIONS } from './definitions/passives';
 import { DIODES_LEDS_DEFINITIONS } from './definitions/diodesLeds';
 import { SEMICONDUCTORS_DEFINITIONS } from './definitions/semiconductors';
 import { SWITCHES_DEFINITIONS } from './definitions/switches';
+import { TEMPERATURE_SENSOR_DEFINITIONS } from './definitions/temperatureSensors';
+import { ENVIRONMENTAL_SENSOR_DEFINITIONS } from './definitions/environmentalSensors';
+import { GAS_SENSOR_DEFINITIONS } from './definitions/gasSensors';
+import { SOIL_WATER_SENSOR_DEFINITIONS } from './definitions/soilWaterSensors';
+import { OPTICAL_SOUND_SENSOR_DEFINITIONS } from './definitions/opticalSoundSensors';
 import { LEGACY_DEFINITIONS } from './definitions/legacy';
 
 // ============================================================================
-// Phase 1 & 2 Component Registry: Singleton & Lookup Manager
+// Phase 1, 2 & 3 Component Registry: Singleton & Lookup Manager
 // ============================================================================
 
 class HardwareComponentRegistry {
@@ -27,6 +32,11 @@ class HardwareComponentRegistry {
       ...DIODES_LEDS_DEFINITIONS,
       ...SEMICONDUCTORS_DEFINITIONS,
       ...SWITCHES_DEFINITIONS,
+      ...TEMPERATURE_SENSOR_DEFINITIONS,
+      ...ENVIRONMENTAL_SENSOR_DEFINITIONS,
+      ...GAS_SENSOR_DEFINITIONS,
+      ...SOIL_WATER_SENSOR_DEFINITIONS,
+      ...OPTICAL_SOUND_SENSOR_DEFINITIONS,
       ...LEGACY_DEFINITIONS,
     ]);
   }

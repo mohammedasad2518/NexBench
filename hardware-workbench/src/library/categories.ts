@@ -41,12 +41,28 @@ export const HARDWARE_CATEGORIES: CategoryMetadata[] = [
     ],
   },
   {
+    id: 'environmental_sensors',
+    label: 'Environmental & Measurement Sensors',
+    description: 'Precision sensors for temperature, humidity, pressure, gas, air quality, soil, water, light, UV, and sound.',
+    iconName: 'Gauge',
+    badgeColor: '#06b6d4', // Cyan
+    order: 3,
+    subcategories: [
+      'Temperature & Humidity',
+      'Pressure & Weather',
+      'Gas & Air Quality',
+      'Soil & Water',
+      'Light & UV',
+      'Sound Sensors',
+    ],
+  },
+  {
     id: 'prototyping',
     label: 'Breadboards & Prototyping',
     description: 'Solderless breadboards, perfboards, stripboards, and rapid circuit prototyping platforms.',
     iconName: 'Grid',
     badgeColor: '#0284c7', // Sky Blue
-    order: 3,
+    order: 4,
     subcategories: ['Solderless Breadboards', 'Perfboards & Stripboards', 'PCB Prototyping'],
   },
   {
@@ -55,7 +71,7 @@ export const HARDWARE_CATEGORIES: CategoryMetadata[] = [
     description: 'DuPont jumper wires, ribbon cables, USB interconnects, and test leads.',
     iconName: 'Cable',
     badgeColor: '#8b5cf6', // Violet
-    order: 4,
+    order: 5,
     subcategories: ['DuPont Jumper Wires', 'Solid Hookup Wires', 'Ribbon Cables', 'USB & Data Cables', 'Test Leads'],
   },
   {
@@ -64,7 +80,7 @@ export const HARDWARE_CATEGORIES: CategoryMetadata[] = [
     description: 'Pin headers, screw terminals, JST plugs, DC jacks, and breadboard power supplies.',
     iconName: 'Plug',
     badgeColor: '#f59e0b', // Amber
-    order: 5,
+    order: 6,
     subcategories: ['Pin Headers', 'Terminal Blocks', 'Wire Connectors', 'Power Accessories'],
   },
   // Legacy categories preserved for existing robot & sensor assemblies
@@ -74,7 +90,7 @@ export const HARDWARE_CATEGORIES: CategoryMetadata[] = [
     description: 'Chassis plates, mounting brackets, and physical obstacles.',
     iconName: 'Layers',
     badgeColor: '#475569',
-    order: 6,
+    order: 7,
     subcategories: ['Chassis & Frames', 'Obstacles & Track'],
   },
   {
@@ -83,7 +99,7 @@ export const HARDWARE_CATEGORIES: CategoryMetadata[] = [
     description: 'DC gearmotors, drive wheels, and micro servo actuators.',
     iconName: 'Zap',
     badgeColor: '#eab308',
-    order: 6,
+    order: 8,
     subcategories: ['Motors & Wheels'],
   },
   {
@@ -92,7 +108,7 @@ export const HARDWARE_CATEGORIES: CategoryMetadata[] = [
     description: 'Ultrasonic rangefinders, IR reflectance trackers, and analog potentiometers.',
     iconName: 'Radio',
     badgeColor: '#06b6d4',
-    order: 7,
+    order: 9,
     subcategories: ['Sensors'],
   },
   {
@@ -101,7 +117,7 @@ export const HARDWARE_CATEGORIES: CategoryMetadata[] = [
     description: 'LED indicators and visual signal devices.',
     iconName: 'Lightbulb',
     badgeColor: '#ef4444',
-    order: 8,
+    order: 10,
     subcategories: ['Visual Indicators'],
   },
 ];

@@ -90,6 +90,24 @@ export interface ServoCircuitState {
   warning?: string;
 }
 
+export interface EnvironmentalSensorCircuitState {
+  componentId: string;
+  sensorType: string;
+  isCircuitComplete: boolean;
+  vccConnected: boolean;
+  gndConnected: boolean;
+  signalPin: number | null;
+  aoPin: number | null;
+  doPin: number | null;
+  sclPin: number | null;
+  sdaPin: number | null;
+  readingValue: number;
+  readingUnit: string;
+  adcValue?: number;
+  digitalValue?: number;
+  warning?: string;
+}
+
 export interface EvaluatedCircuit {
   leds: Map<string, LedCircuitState>;
   motors: Map<string, MotorCircuitState>;
@@ -97,6 +115,7 @@ export interface EvaluatedCircuit {
   potentiometers: Map<string, PotentiometerCircuitState>;
   lineSensors: Map<string, LineSensorCircuitState>;
   servos: Map<string, ServoCircuitState>;
+  environmentalSensors: Map<string, EnvironmentalSensorCircuitState>;
 }
 
 export const MAX_MOTOR_SPEED_RAD_S = 20.0; // ~190 RPM (standard DC gearmotor drive speed)
@@ -130,7 +149,7 @@ export function isGroundTerminal(terminalId: string): boolean {
  */
 export function isPowerTerminal(terminalId: string): boolean {
   const norm = terminalId.trim().toUpperCase();
-  return norm === '5V' || norm === '3V3' || norm === '3.3V' || norm === 'VIN' || norm === 'VCC';
+  return norm.includes('5V') || norm.includes('3V3') || norm.includes('3.3V') || norm.includes('VIN') || norm.includes('VCC');
 }
 
 /**
@@ -155,11 +174,14 @@ export function evaluateCircuitState(
   const potentiometers = new Map<string, PotentiometerCircuitState>();
   const lineSensors = new Map<string, LineSensorCircuitState>();
   const servos = new Map<string, ServoCircuitState>();
+  const environmentalSensors = new Map<string, EnvironmentalSensorCircuitState>();
 
-  // 1. Locate Controller Board (Arduino)
-  const arduinoComp = components.find((c) => c.type === 'arduino' && c.visible);
+  // 1. Locate Controller Board (Arduino or ESP32)
+  const arduinoComp = components.find(
+    (c) => (c.type === 'arduino' || c.type.startsWith('arduino_') || c.type.includes('esp32')) && c.visible !== false
+  );
   if (!arduinoComp) {
-    return { leds, motors, ultrasonics, potentiometers, lineSensors, servos };
+    return { leds, motors, ultrasonics, potentiometers, lineSensors, servos, environmentalSensors };
   }
 
   // 2. Evaluate LED Circuits
@@ -588,7 +610,184 @@ export function evaluateCircuitState(
     });
   }
 
-  return { leds, motors, ultrasonics, potentiometers, lineSensors, servos };
+  // 7. Evaluate Environmental & Measurement Sensors (Phase 3)
+  const envSensorComponents = components.filter((c) => c.type.startsWith('sensor_') && c.visible !== false);
+  for (const sensor of envSensorComponents) {
+    const sWires = wires.filter((w) => w.fromComponentId === sensor.id || w.toComponentId === sensor.id);
+    let vccConnected = false;
+    let gndConnected = false;
+    let signalPin: number | null = null;
+    let aoPin: number | null = null;
+    let doPin: number | null = null;
+    let sclPin: number | null = null;
+    let sdaPin: number | null = null;
+
+    for (const wire of sWires) {
+      const isFromSensor = wire.fromComponentId === sensor.id;
+      const term = isFromSensor ? wire.fromTerminalId : wire.toTerminalId;
+      const otherCompId = isFromSensor ? wire.toComponentId : wire.fromComponentId;
+      const otherTerm = isFromSensor ? wire.toTerminalId : wire.fromTerminalId;
+
+      if (otherCompId === arduinoComp.id) {
+        if (
+          (term === 'PIN_VCC' || term === 'PIN_VS' || term === 'PIN_VIN' || term === 'PIN_VDD' || term === 'TERM_A') &&
+          isPowerTerminal(otherTerm)
+        ) {
+          vccConnected = true;
+        } else if (
+          (term === 'PIN_GND' || term === 'PIN_GND' || term === 'PIN_GND' || term === 'TERM_B') &&
+          isGroundTerminal(otherTerm)
+        ) {
+          gndConnected = true;
+        } else if (term === 'PIN_DATA' || term === 'PIN_DQ') {
+          const pin = resolveTerminalPinNumber(otherTerm);
+          if (pin !== null) signalPin = pin;
+        } else if (term === 'PIN_AO' || term === 'PIN_AOUT' || term === 'PIN_VOUT' || term === 'PIN_SIG' || term === 'PIN_OUT') {
+          const pin = resolveTerminalPinNumber(otherTerm);
+          if (pin !== null) aoPin = pin;
+        } else if (term === 'PIN_DO') {
+          const pin = resolveTerminalPinNumber(otherTerm);
+          if (pin !== null) doPin = pin;
+        } else if (term === 'PIN_SCL') {
+          const pin = resolveTerminalPinNumber(otherTerm);
+          if (pin !== null) sclPin = pin;
+        } else if (term === 'PIN_SDA') {
+          const pin = resolveTerminalPinNumber(otherTerm);
+          if (pin !== null) sdaPin = pin;
+        }
+      }
+    }
+
+    let readingValue = 0;
+    let readingUnit = '';
+    let adcValue = 0;
+    let digitalValue: 0 | 1 = 1;
+
+    // Calculate sensor readings based on type
+    switch (sensor.type) {
+      case 'sensor_lm35': {
+        const temp = sensor.metadata?.temperatureC ?? 25.0;
+        readingValue = temp;
+        readingUnit = '°C';
+        const vout = (temp * 0.010); // 10mV/°C
+        adcValue = Math.min(1023, Math.max(0, Math.round((vout / 5.0) * 1023)));
+        break;
+      }
+      case 'sensor_ldr': {
+        const lux = sensor.metadata?.lightLux ?? 500;
+        readingValue = lux;
+        readingUnit = 'Lux';
+        const rOhms = 500000 / Math.pow(Math.max(0.1, lux), 0.7);
+        adcValue = Math.min(1023, Math.max(0, Math.round(1023 * (10000 / (10000 + rOhms)))));
+        break;
+      }
+      case 'sensor_soil_moisture': {
+        const moisture = sensor.metadata?.moisturePercent ?? 35;
+        readingValue = moisture;
+        readingUnit = '%';
+        adcValue = Math.min(1023, Math.max(0, Math.round(1020 - (moisture / 100) * 820)));
+        digitalValue = moisture >= (sensor.metadata?.soundThresholdPercent ?? 50) ? 0 : 1;
+        break;
+      }
+      case 'sensor_rain': {
+        const rain = sensor.metadata?.rainIntensityPercent ?? 0;
+        readingValue = rain;
+        readingUnit = '%';
+        adcValue = Math.min(1023, Math.max(0, Math.round(1023 - (rain / 100) * 873)));
+        digitalValue = rain >= 20 ? 0 : 1;
+        break;
+      }
+      case 'sensor_water_level': {
+        const level = sensor.metadata?.waterLevelPercent ?? 0;
+        readingValue = level;
+        readingUnit = '%';
+        adcValue = Math.min(1023, Math.max(0, Math.round((level / 100) * 860)));
+        break;
+      }
+      case 'sensor_uv': {
+        const uv = sensor.metadata?.uvIndex ?? 3.0;
+        readingValue = uv;
+        readingUnit = 'UVI';
+        const vout = uv * 0.1;
+        adcValue = Math.min(1023, Math.max(0, Math.round((vout / 5.0) * 1023)));
+        break;
+      }
+      case 'sensor_sound': {
+        const sound = sensor.metadata?.soundIntensityPercent ?? 20;
+        readingValue = sound;
+        readingUnit = '%';
+        adcValue = Math.min(1023, Math.max(0, Math.round(512 + (sound / 100) * 400)));
+        digitalValue = sound >= (sensor.metadata?.soundThresholdPercent ?? 60) ? 0 : 1;
+        break;
+      }
+      case 'sensor_mq2':
+      case 'sensor_mq3':
+      case 'sensor_mq4':
+      case 'sensor_mq7':
+      case 'sensor_mq135': {
+        const ppm = sensor.metadata?.gasPpm ?? 400;
+        readingValue = ppm;
+        readingUnit = 'PPM';
+        adcValue = Math.min(1023, Math.max(0, Math.round(120 + (ppm / 5000) * 800)));
+        digitalValue = ppm >= (sensor.metadata?.gasThresholdPpm ?? 1000) ? 0 : 1;
+        break;
+      }
+      case 'sensor_dht11':
+      case 'sensor_dht22': {
+        const temp = sensor.metadata?.temperatureC ?? (sensor.type === 'sensor_dht11' ? 24 : 22.5);
+        readingValue = temp;
+        readingUnit = '°C';
+        break;
+      }
+      case 'sensor_bmp180':
+      case 'sensor_bmp280':
+      case 'sensor_bme280': {
+        const press = sensor.metadata?.pressureHpa ?? 1013.25;
+        readingValue = press;
+        readingUnit = 'hPa';
+        break;
+      }
+      default:
+        readingValue = 0;
+        readingUnit = '';
+        break;
+    }
+
+    const isCircuitComplete = (vccConnected && gndConnected) || (signalPin !== null) || (aoPin !== null);
+
+    // Feed analog and digital pins into Arduino runtime
+    if (isCircuitComplete) {
+      if (aoPin !== null && simulatedPins[aoPin]) {
+        simulatedPins[aoPin].analogValue = adcValue;
+        simulatedPins[aoPin].digitalValue = adcValue > 511 ? 1 : 0;
+      }
+      if (doPin !== null && simulatedPins[doPin]) {
+        simulatedPins[doPin].digitalValue = digitalValue;
+      }
+      if (signalPin !== null && simulatedPins[signalPin]) {
+        simulatedPins[signalPin].digitalValue = 1;
+      }
+    }
+
+    environmentalSensors.set(sensor.id, {
+      componentId: sensor.id,
+      sensorType: sensor.type,
+      isCircuitComplete,
+      vccConnected,
+      gndConnected,
+      signalPin,
+      aoPin,
+      doPin,
+      sclPin,
+      sdaPin,
+      readingValue,
+      readingUnit,
+      adcValue,
+      digitalValue,
+    });
+  }
+
+  return { leds, motors, ultrasonics, potentiometers, lineSensors, servos, environmentalSensors };
 }
 
 /**

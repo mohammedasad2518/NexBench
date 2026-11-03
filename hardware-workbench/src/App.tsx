@@ -1487,6 +1487,7 @@ export function App() {
           snapTranslate={snapTranslate}
           snapRotate={snapRotate}
           gridVisible={gridVisible}
+          setGridVisible={setGridVisible}
           onDeleteSelected={() => {
             if (selectedId) handleDeleteComponent(selectedId);
             else if (selectedWireId) handleDeleteWire(selectedWireId);

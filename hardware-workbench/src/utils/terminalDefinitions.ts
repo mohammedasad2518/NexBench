@@ -33,6 +33,31 @@ import {
   SLIDE_SWITCH_PINS, 
   DIP_SWITCH_PINS 
 } from '../library/definitions/switches';
+import {
+  DHT11_PINS,
+  DHT22_PINS,
+  DS18B20_PINS,
+  LM35_PINS,
+  NTC_THERMISTOR_PINS
+} from '../library/definitions/temperatureSensors';
+import {
+  BMP180_PINS,
+  BMP280_PINS,
+  BME280_PINS
+} from '../library/definitions/environmentalSensors';
+import {
+  MQ_MODULE_PINS
+} from '../library/definitions/gasSensors';
+import {
+  SOIL_MOISTURE_PINS,
+  RAIN_SENSOR_PINS,
+  WATER_LEVEL_PINS
+} from '../library/definitions/soilWaterSensors';
+import {
+  LDR_PINS,
+  UV_SENSOR_PINS,
+  SOUND_SENSOR_PINS
+} from '../library/definitions/opticalSoundSensors';
 
 export const COMPONENT_TERMINALS: Record<ComponentType, TerminalDefinition[]> = {
   // Phase 1 Development Boards
@@ -447,6 +472,36 @@ export const COMPONENT_TERMINALS: Record<ComponentType, TerminalDefinition[]> = 
   ic_opamp: OPAMP_LM358_PINS,
   ic_logic_gate: LOGIC_7400_PINS,
   ic_optocoupler: OPTOCOUPLER_PC817_PINS,
+
+  // Phase 3: Environmental & Measurement Sensors
+  // 1. Temperature & Humidity
+  sensor_dht11: DHT11_PINS,
+  sensor_dht22: DHT22_PINS,
+  sensor_ds18b20: DS18B20_PINS,
+  sensor_lm35: LM35_PINS,
+  sensor_ntc_thermistor: NTC_THERMISTOR_PINS,
+
+  // 2. Pressure & Weather
+  sensor_bmp180: BMP180_PINS,
+  sensor_bmp280: BMP280_PINS,
+  sensor_bme280: BME280_PINS,
+
+  // 3. Gas & Air Quality
+  sensor_mq2: MQ_MODULE_PINS,
+  sensor_mq3: MQ_MODULE_PINS,
+  sensor_mq4: MQ_MODULE_PINS,
+  sensor_mq7: MQ_MODULE_PINS,
+  sensor_mq135: MQ_MODULE_PINS,
+
+  // 4. Soil & Water
+  sensor_soil_moisture: SOIL_MOISTURE_PINS,
+  sensor_rain: RAIN_SENSOR_PINS,
+  sensor_water_level: WATER_LEVEL_PINS,
+
+  // 5. Light, UV & Sound
+  sensor_ldr: LDR_PINS,
+  sensor_uv: UV_SENSOR_PINS,
+  sensor_sound: SOUND_SENSOR_PINS,
 
   // Non-electrical mechanical components have no terminals
   chassis: [],

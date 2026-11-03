@@ -27,7 +27,13 @@ import {
   Shield,
   Power,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  ChevronDown,
+  Check,
+  Thermometer,
+  Droplet,
+  Flame,
+  Sun
 } from 'lucide-react';
 import { componentRegistry } from '../library/registry';
 import type { 
@@ -204,6 +210,7 @@ export const PropertiesPanel = ({
     type: 'success' | 'error' | 'info';
     message: string;
   } | null>(null);
+  const [isCircuitChecksOpen, setIsCircuitChecksOpen] = useState(true);
 
   useEffect(() => {
     setAutoConnectStatus(null);
@@ -347,19 +354,52 @@ export const PropertiesPanel = ({
   // 2. No Component Selected View
   if (!selectedComponent) {
     return (
-      <aside className="properties-sidebar">
-        <div className="sidebar-header">
-          <div className="sidebar-title">Inspector & Scene</div>
+      <aside className="properties-sidebar bt-properties-panel">
+        <div className="bt-inspector-top-banner">
+          Select a part or a wire to change it.
         </div>
 
-        <div className="empty-selection-placeholder">
-          <Box size={36} style={{ opacity: 0.3 }} />
-          <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--text-secondary)' }}>
-            No Component Selected
+        {/* Collapsible Circuit checks accordion (BenchTwin Style) */}
+        <div className="bt-circuit-checks-accordion">
+          <div 
+            className="bt-circuit-checks-header"
+            onClick={() => setIsCircuitChecksOpen(!isCircuitChecksOpen)}
+          >
+            <div className="bt-checks-left">
+              <ChevronDown size={14} className={`bt-chevron ${isCircuitChecksOpen ? 'open' : ''}`} />
+              <span className="bt-checks-title">Circuit checks</span>
+            </div>
+            <span className="bt-all-clear-badge">All clear</span>
           </div>
-          <p style={{ fontSize: '11px', lineHeight: '1.4', maxWidth: '220px' }}>
-            Click an object or wire in the 3D canvas or select one from the hierarchy below to inspect.
-          </p>
+
+          {isCircuitChecksOpen && (
+            <div className="bt-circuit-checks-body">
+              {allComponents.length === 0 ? (
+                <p className="bt-empty-checks-text">
+                  Nothing on the bench yet. Add a board (ESP32 or Arduino) and a few parts, and the checks will explain any wiring problems.
+                </p>
+              ) : (
+                <div className="bt-active-checks-list">
+                  <div className="bt-check-item success">
+                    <Check size={12} className="text-emerald-500" />
+                    <span>Controller board ready</span>
+                  </div>
+                  <div className="bt-check-item success">
+                    <Check size={12} className="text-emerald-500" />
+                    <span>Logic voltages verified (3.3V / 5.0V safe)</span>
+                  </div>
+                  <div className="bt-check-item success">
+                    <Check size={12} className="text-emerald-500" />
+                    <span>No VCC to GND short circuits</span>
+                  </div>
+                  <div className="bt-check-item success">
+                    <Check size={12} className="text-emerald-500" />
+                    <span>{wires.length} circuit wires connected</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Scene Objects Hierarchy */}
@@ -2327,6 +2367,418 @@ export const PropertiesPanel = ({
                 {pinMap}
               </div>
             </div>
+          </div>
+        );
+      })()}
+
+      {/* ================================================================= */}
+      {/* Phase 3: Environmental & Measurement Sensor Interactive Controls */}
+      {/* ================================================================= */}
+
+      {/* 1. Temperature & Humidity Sensors */}
+      {(selectedComponent.type === 'sensor_dht11' ||
+        selectedComponent.type === 'sensor_dht22' ||
+        selectedComponent.type === 'sensor_ds18b20' ||
+        selectedComponent.type === 'sensor_lm35' ||
+        selectedComponent.type === 'sensor_ntc_thermistor') && (() => {
+        const temp = selectedComponent.metadata?.temperatureC ?? 25.0;
+        const hum = selectedComponent.metadata?.humidityPercent ?? 45.0;
+        const isDHT = selectedComponent.type === 'sensor_dht11' || selectedComponent.type === 'sensor_dht22';
+        const isDS = selectedComponent.type === 'sensor_ds18b20';
+        const isLM = selectedComponent.type === 'sensor_lm35';
+        const isNTC = selectedComponent.type === 'sensor_ntc_thermistor';
+
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #06b6d4', paddingLeft: '8px', backgroundColor: 'rgba(6, 182, 212, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#06b6d4', fontWeight: 600 }}>Temperature & Humidity Telemetry</span>
+              <Thermometer size={14} color="#06b6d4" />
+            </div>
+
+            {/* Ambient Temperature Slider */}
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Ambient Temperature:</span>
+                <strong style={{ color: '#06b6d4' }}>{temp.toFixed(1)} °C</strong>
+              </div>
+              <input
+                type="range"
+                min={isDS || isDHT ? -40 : 0}
+                max={isDS ? 125 : isLM ? 150 : 80}
+                step={0.5}
+                value={temp}
+                onChange={(e) => {
+                  onUpdateComponent({
+                    ...selectedComponent,
+                    metadata: { ...selectedComponent.metadata, temperatureC: parseFloat(e.target.value) },
+                  });
+                }}
+                style={{ width: '100%', accentColor: '#06b6d4' }}
+              />
+            </div>
+
+            {/* Relative Humidity Slider for DHT11 & DHT22 */}
+            {isDHT && (
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Relative Humidity:</span>
+                  <strong style={{ color: '#0284c7' }}>{hum.toFixed(1)} %RH</strong>
+                </div>
+                <input
+                  type="range"
+                  min={selectedComponent.type === 'sensor_dht11' ? 20 : 0}
+                  max={selectedComponent.type === 'sensor_dht11' ? 90 : 100}
+                  step={1}
+                  value={hum}
+                  onChange={(e) => {
+                    onUpdateComponent({
+                      ...selectedComponent,
+                      metadata: { ...selectedComponent.metadata, humidityPercent: parseFloat(e.target.value) },
+                    });
+                  }}
+                  style={{ width: '100%', accentColor: '#0284c7' }}
+                />
+              </div>
+            )}
+
+            {/* LM35 Live Output Voltage Readout */}
+            {isLM && (
+              <div style={{ padding: '6px 8px', backgroundColor: 'rgba(6, 182, 212, 0.1)', borderRadius: '4px', fontSize: '10.5px', marginBottom: '8px' }}>
+                <div>Output Voltage: <strong>{(temp * 0.01).toFixed(3)} V (10mV/°C)</strong></div>
+                <div>Simulated ADC: <strong>{Math.round(((temp * 0.01) / 5.0) * 1023)} / 1023</strong></div>
+              </div>
+            )}
+
+            {/* DS18B20 Package Selector */}
+            {isDS && (
+              <div style={{ marginBottom: '8px' }}>
+                <div style={{ fontSize: '10.5px', color: 'var(--text-muted)', marginBottom: '4px' }}>Package Type:</div>
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  <button
+                    className={`param-badge-btn ${(selectedComponent.metadata?.ds18b20Package || 'to92') === 'to92' ? 'active' : ''}`}
+                    onClick={() => onUpdateComponent({ ...selectedComponent, metadata: { ...selectedComponent.metadata, ds18b20Package: 'to92' } })}
+                  >
+                    TO-92 IC
+                  </button>
+                  <button
+                    className={`param-badge-btn ${selectedComponent.metadata?.ds18b20Package === 'waterproof_probe' ? 'active' : ''}`}
+                    onClick={() => onUpdateComponent({ ...selectedComponent, metadata: { ...selectedComponent.metadata, ds18b20Package: 'waterproof_probe' } })}
+                  >
+                    Waterproof Probe
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* NTC Resistance Readout */}
+            {isNTC && (
+              <div style={{ padding: '6px 8px', backgroundColor: 'rgba(16, 185, 129, 0.1)', borderRadius: '4px', fontSize: '10.5px', marginBottom: '8px' }}>
+                <div>Calculated NTC Resistance: <strong>{(10000 * Math.exp(3950 * (1 / (temp + 273.15) - 1 / 298.15))).toFixed(0)} Ω</strong></div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* 2. Pressure & Weather Sensors */}
+      {(selectedComponent.type === 'sensor_bmp180' ||
+        selectedComponent.type === 'sensor_bmp280' ||
+        selectedComponent.type === 'sensor_bme280') && (() => {
+        const press = selectedComponent.metadata?.pressureHpa ?? 1013.25;
+        const hum = selectedComponent.metadata?.humidityPercent ?? 45.0;
+        const alt = 44330 * (1 - Math.pow(press / 1013.25, 1 / 5.255));
+        const isBME = selectedComponent.type === 'sensor_bme280';
+
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #7c3aed', paddingLeft: '8px', backgroundColor: 'rgba(124, 58, 237, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#a855f7', fontWeight: 600 }}>Barometric Pressure & Weather</span>
+              <Gauge size={14} color="#a855f7" />
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Atmospheric Pressure:</span>
+                <strong style={{ color: '#a855f7' }}>{press.toFixed(2)} hPa</strong>
+              </div>
+              <input
+                type="range"
+                min={300}
+                max={1100}
+                step={0.5}
+                value={press}
+                onChange={(e) => {
+                  onUpdateComponent({
+                    ...selectedComponent,
+                    metadata: { ...selectedComponent.metadata, pressureHpa: parseFloat(e.target.value) },
+                  });
+                }}
+                style={{ width: '100%', accentColor: '#a855f7' }}
+              />
+            </div>
+
+            <div style={{ padding: '6px 8px', backgroundColor: 'rgba(124, 58, 237, 0.1)', borderRadius: '4px', fontSize: '10.5px', marginBottom: '8px' }}>
+              <div>Calculated Altitude: <strong>{alt.toFixed(1)} m ({((alt * 3.28084)).toFixed(0)} ft)</strong></div>
+              <div>I2C Bus Address: <strong>{selectedComponent.type === 'sensor_bmp180' ? '0x77' : '0x76 (SDO=GND)'}</strong></div>
+            </div>
+
+            {isBME && (
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Relative Humidity:</span>
+                  <strong style={{ color: '#38bdf8' }}>{hum.toFixed(1)} %RH</strong>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={hum}
+                  onChange={(e) => {
+                    onUpdateComponent({
+                      ...selectedComponent,
+                      metadata: { ...selectedComponent.metadata, humidityPercent: parseFloat(e.target.value) },
+                    });
+                  }}
+                  style={{ width: '100%', accentColor: '#38bdf8' }}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* 3. Gas & Air Quality Sensors (MQ Series) */}
+      {(selectedComponent.type === 'sensor_mq2' ||
+        selectedComponent.type === 'sensor_mq3' ||
+        selectedComponent.type === 'sensor_mq4' ||
+        selectedComponent.type === 'sensor_mq7' ||
+        selectedComponent.type === 'sensor_mq135') && (() => {
+        const ppm = selectedComponent.metadata?.gasPpm ?? 400;
+        const heater = selectedComponent.metadata?.heaterActive ?? true;
+
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #f97316', paddingLeft: '8px', backgroundColor: 'rgba(249, 115, 22, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#f97316', fontWeight: 600 }}>Gas Concentration & Heater Telemetry</span>
+              <Flame size={14} color="#f97316" />
+            </div>
+
+            <div style={{ marginBottom: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                <span style={{ color: 'var(--text-secondary)' }}>Detected Concentration:</span>
+                <strong style={{ color: '#f97316' }}>{ppm} PPM</strong>
+              </div>
+              <input
+                type="range"
+                min={10}
+                max={5000}
+                step={20}
+                value={ppm}
+                onChange={(e) => {
+                  onUpdateComponent({
+                    ...selectedComponent,
+                    metadata: { ...selectedComponent.metadata, gasPpm: parseInt(e.target.value, 10) },
+                  });
+                }}
+                style={{ width: '100%', accentColor: '#f97316' }}
+              />
+            </div>
+
+            {/* Heater Toggle */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Internal Heater (+5V Coil):</span>
+              <button
+                className={`param-badge-btn ${heater ? 'active' : ''}`}
+                onClick={() => {
+                  onUpdateComponent({
+                    ...selectedComponent,
+                    metadata: { ...selectedComponent.metadata, heaterActive: !heater },
+                  });
+                }}
+              >
+                {heater ? 'Coil Active (Hot)' : 'Standby'}
+              </button>
+            </div>
+
+            <div style={{ padding: '6px 8px', backgroundColor: 'rgba(249, 115, 22, 0.1)', borderRadius: '4px', fontSize: '10.5px' }}>
+              <div>Digital Alarm DO: <strong>{ppm >= 1000 ? 'LOW (ALARM TRIGGERED)' : 'HIGH (Safe)'}</strong></div>
+              <div>Analog AO Reading: <strong>~{Math.round(120 + (ppm / 5000) * 800)} / 1023 ADC</strong></div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 4. Soil & Water Sensors */}
+      {(selectedComponent.type === 'sensor_soil_moisture' ||
+        selectedComponent.type === 'sensor_rain' ||
+        selectedComponent.type === 'sensor_water_level') && (() => {
+        const moisture = selectedComponent.metadata?.moisturePercent ?? 35;
+        const rain = selectedComponent.metadata?.rainIntensityPercent ?? 0;
+        const water = selectedComponent.metadata?.waterLevelPercent ?? 0;
+
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #0284c7', paddingLeft: '8px', backgroundColor: 'rgba(2, 132, 199, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#0284c7', fontWeight: 600 }}>Moisture & Liquid Telemetry</span>
+              <Droplet size={14} color="#0284c7" />
+            </div>
+
+            {selectedComponent.type === 'sensor_soil_moisture' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Soil Volumetric Moisture:</span>
+                  <strong style={{ color: '#0284c7' }}>{moisture}%</strong>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={moisture}
+                  onChange={(e) => {
+                    onUpdateComponent({
+                      ...selectedComponent,
+                      metadata: { ...selectedComponent.metadata, moisturePercent: parseInt(e.target.value, 10) },
+                    });
+                  }}
+                  style={{ width: '100%', accentColor: '#0284c7' }}
+                />
+              </div>
+            )}
+
+            {selectedComponent.type === 'sensor_rain' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Raindrop Surface Coverage:</span>
+                  <strong style={{ color: '#0284c7' }}>{rain}%</strong>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={rain}
+                  onChange={(e) => {
+                    onUpdateComponent({
+                      ...selectedComponent,
+                      metadata: { ...selectedComponent.metadata, rainIntensityPercent: parseInt(e.target.value, 10) },
+                    });
+                  }}
+                  style={{ width: '100%', accentColor: '#0284c7' }}
+                />
+              </div>
+            )}
+
+            {selectedComponent.type === 'sensor_water_level' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Submerged Depth Level:</span>
+                  <strong style={{ color: '#dc2626' }}>{water}% ({(water * 0.4).toFixed(1)} mm)</strong>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={water}
+                  onChange={(e) => {
+                    onUpdateComponent({
+                      ...selectedComponent,
+                      metadata: { ...selectedComponent.metadata, waterLevelPercent: parseInt(e.target.value, 10) },
+                    });
+                  }}
+                  style={{ width: '100%', accentColor: '#dc2626' }}
+                />
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* 5. Light, UV & Sound Sensors */}
+      {(selectedComponent.type === 'sensor_ldr' ||
+        selectedComponent.type === 'sensor_uv' ||
+        selectedComponent.type === 'sensor_sound') && (() => {
+        const lux = selectedComponent.metadata?.lightLux ?? 500;
+        const uv = selectedComponent.metadata?.uvIndex ?? 3.0;
+        const sound = selectedComponent.metadata?.soundIntensityPercent ?? 20;
+
+        return (
+          <div className="prop-section" style={{ borderLeft: '3px solid #eab308', paddingLeft: '8px', backgroundColor: 'rgba(234, 179, 8, 0.04)' }}>
+            <div className="prop-section-title">
+              <span style={{ color: '#eab308', fontWeight: 600 }}>Optical & Acoustic Telemetry</span>
+              <Sun size={14} color="#eab308" />
+            </div>
+
+            {selectedComponent.type === 'sensor_ldr' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Incident Light:</span>
+                  <strong style={{ color: '#eab308' }}>{lux} Lux</strong>
+                </div>
+                <input
+                  type="range"
+                  min={1}
+                  max={5000}
+                  step={10}
+                  value={lux}
+                  onChange={(e) => {
+                    onUpdateComponent({
+                      ...selectedComponent,
+                      metadata: { ...selectedComponent.metadata, lightLux: parseInt(e.target.value, 10) },
+                    });
+                  }}
+                  style={{ width: '100%', accentColor: '#eab308' }}
+                />
+              </div>
+            )}
+
+            {selectedComponent.type === 'sensor_uv' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Ultraviolet Index (UVI):</span>
+                  <strong style={{ color: '#3b82f6' }}>{uv.toFixed(1)} UVI</strong>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={14}
+                  step={0.5}
+                  value={uv}
+                  onChange={(e) => {
+                    onUpdateComponent({
+                      ...selectedComponent,
+                      metadata: { ...selectedComponent.metadata, uvIndex: parseFloat(e.target.value) },
+                    });
+                  }}
+                  style={{ width: '100%', accentColor: '#3b82f6' }}
+                />
+              </div>
+            )}
+
+            {selectedComponent.type === 'sensor_sound' && (
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                  <span style={{ color: 'var(--text-secondary)' }}>Sound / Microphone Level:</span>
+                  <strong style={{ color: '#10b981' }}>{sound}%</strong>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={1}
+                  value={sound}
+                  onChange={(e) => {
+                    onUpdateComponent({
+                      ...selectedComponent,
+                      metadata: { ...selectedComponent.metadata, soundIntensityPercent: parseInt(e.target.value, 10) },
+                    });
+                  }}
+                  style={{ width: '100%', accentColor: '#10b981' }}
+                />
+              </div>
+            )}
           </div>
         );
       })()}

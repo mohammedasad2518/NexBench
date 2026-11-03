@@ -656,6 +656,199 @@ export const ComponentThumbnail: React.FC<ComponentThumbnailProps> = ({
       );
     }
 
+    // Phase 3: Environmental & Measurement Sensors
+    case 'sensor_dht11':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="11" y="6" width="18" height="22" rx="2" fill="#0284c7" stroke="#38bdf8" strokeWidth="1.2" />
+          <rect x="14" y="9" width="12" height="2" fill="#0369a1" />
+          <rect x="14" y="13" width="12" height="2" fill="#0369a1" />
+          <rect x="14" y="17" width="12" height="2" fill="#0369a1" />
+          <rect x="14" y="21" width="12" height="2" fill="#0369a1" />
+          <line x1="13" y1="28" x2="13" y2="34" stroke="#94a3b8" strokeWidth="1.5" />
+          <line x1="17" y1="28" x2="17" y2="34" stroke="#94a3b8" strokeWidth="1.5" />
+          <line x1="23" y1="28" x2="23" y2="34" stroke="#94a3b8" strokeWidth="1.5" />
+          <line x1="27" y1="28" x2="27" y2="34" stroke="#94a3b8" strokeWidth="1.5" />
+        </svg>
+      );
+
+    case 'sensor_dht22':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="11" y="5" width="18" height="24" rx="2" fill="#f8fafc" stroke="#cbd5e1" strokeWidth="1.2" />
+          <rect x="14" y="8" width="12" height="2" fill="#e2e8f0" />
+          <rect x="14" y="12" width="12" height="2" fill="#e2e8f0" />
+          <rect x="14" y="16" width="12" height="2" fill="#e2e8f0" />
+          <rect x="14" y="20" width="12" height="2" fill="#e2e8f0" />
+          <rect x="14" y="24" width="12" height="2" fill="#e2e8f0" />
+          <line x1="13" y1="29" x2="13" y2="35" stroke="#94a3b8" strokeWidth="1.5" />
+          <line x1="17" y1="29" x2="17" y2="35" stroke="#94a3b8" strokeWidth="1.5" />
+          <line x1="23" y1="29" x2="23" y2="35" stroke="#94a3b8" strokeWidth="1.5" />
+          <line x1="27" y1="29" x2="27" y2="35" stroke="#94a3b8" strokeWidth="1.5" />
+        </svg>
+      );
+
+    case 'sensor_ds18b20':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 10 H26 A6 6 0 0 1 26 22 H14 A6 6 0 0 1 14 10 Z" fill="#18181b" stroke="#3f3f46" strokeWidth="1" />
+          <text x="20" y="18" fontSize="5" fill="#a1a1aa" textAnchor="middle" fontWeight="bold">18B20</text>
+          <line x1="16" y1="22" x2="16" y2="33" stroke="#94a3b8" strokeWidth="1.5" />
+          <line x1="20" y1="22" x2="20" y2="33" stroke="#94a3b8" strokeWidth="1.5" />
+          <line x1="24" y1="22" x2="24" y2="33" stroke="#94a3b8" strokeWidth="1.5" />
+        </svg>
+      );
+
+    case 'sensor_lm35':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M14 10 H26 A6 6 0 0 1 26 22 H14 A6 6 0 0 1 14 10 Z" fill="#334155" stroke="#475569" strokeWidth="1" />
+          <text x="20" y="17" fontSize="5" fill="#f8fafc" textAnchor="middle" fontWeight="bold">LM35</text>
+          <line x1="16" y1="22" x2="16" y2="33" stroke="#cbd5e1" strokeWidth="1.5" />
+          <line x1="20" y1="22" x2="20" y2="33" stroke="#cbd5e1" strokeWidth="1.5" />
+          <line x1="24" y1="22" x2="24" y2="33" stroke="#cbd5e1" strokeWidth="1.5" />
+        </svg>
+      );
+
+    case 'sensor_ntc_thermistor':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="14" r="7" fill="#059669" stroke="#10b981" strokeWidth="1.2" />
+          <path d="M16 14 Q20 10 24 14" stroke="#047857" strokeWidth="1.2" fill="none" />
+          <line x1="17" y1="21" x2="15" y2="33" stroke="#b45309" strokeWidth="1.5" />
+          <line x1="23" y1="21" x2="25" y2="33" stroke="#b45309" strokeWidth="1.5" />
+        </svg>
+      );
+
+    case 'sensor_bmp180':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="9" width="24" height="20" rx="2" fill="#1d4ed8" stroke="#3b82f6" strokeWidth="1.2" />
+          <rect x="15" y="13" width="10" height="9" rx="1" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="0.8" />
+          <circle cx="18" cy="17" r="1.5" fill="#1e293b" />
+          {/* Pins */}
+          <circle cx="11" cy="25" r="1.5" fill="#f59e0b" />
+          <circle cx="17" cy="25" r="1.5" fill="#f59e0b" />
+          <circle cx="23" cy="25" r="1.5" fill="#f59e0b" />
+          <circle cx="29" cy="25" r="1.5" fill="#f59e0b" />
+        </svg>
+      );
+
+    case 'sensor_bmp280':
+    case 'sensor_bme280':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="9" width="28" height="22" rx="2" fill="#7c3aed" stroke="#a855f7" strokeWidth="1.2" />
+          <rect x="15" y="13" width="10" height="8" rx="1" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="0.8" />
+          <circle cx="17" cy="17" r="1.2" fill="#1e293b" />
+          <text x="20" y="10" fontSize="4.5" fill="#ddd6fe" textAnchor="middle" fontWeight="bold">BOSCH</text>
+          {/* 6 pins */}
+          <circle cx="9" cy="27" r="1.2" fill="#f59e0b" />
+          <circle cx="13" cy="27" r="1.2" fill="#f59e0b" />
+          <circle cx="17" cy="27" r="1.2" fill="#f59e0b" />
+          <circle cx="21" cy="27" r="1.2" fill="#f59e0b" />
+          <circle cx="25" cy="27" r="1.2" fill="#f59e0b" />
+          <circle cx="29" cy="27" r="1.2" fill="#f59e0b" />
+        </svg>
+      );
+
+    case 'sensor_mq2':
+    case 'sensor_mq3':
+    case 'sensor_mq4':
+    case 'sensor_mq7':
+    case 'sensor_mq135': {
+      let mqCode = 'MQ';
+      if (type === 'sensor_mq2') mqCode = 'MQ-2';
+      else if (type === 'sensor_mq3') mqCode = 'MQ-3';
+      else if (type === 'sensor_mq4') mqCode = 'MQ-4';
+      else if (type === 'sensor_mq7') mqCode = 'MQ-7';
+      else if (type === 'sensor_mq135') mqCode = 'MQ135';
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="6" y="6" width="28" height="28" rx="2" fill="#0284c7" stroke="#38bdf8" strokeWidth="1.2" />
+          {/* Steel mesh circle */}
+          <circle cx="20" cy="18" r="9" fill="#94a3b8" stroke="#e2e8f0" strokeWidth="1.5" />
+          <circle cx="20" cy="18" r="5" fill="#f97316" stroke="#ea580c" strokeWidth="1" />
+          <text x="20" y="31" fontSize="4.5" fill="#f8fafc" textAnchor="middle" fontWeight="bold">{mqCode}</text>
+          <line x1="11" y1="34" x2="11" y2="38" stroke="#f59e0b" strokeWidth="1.5" />
+          <line x1="17" y1="34" x2="17" y2="38" stroke="#f59e0b" strokeWidth="1.5" />
+          <line x1="23" y1="34" x2="23" y2="38" stroke="#f59e0b" strokeWidth="1.5" />
+          <line x1="29" y1="34" x2="29" y2="38" stroke="#f59e0b" strokeWidth="1.5" />
+        </svg>
+      );
+    }
+
+    case 'sensor_soil_moisture':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="10" y="4" width="20" height="12" rx="1.5" fill="#0284c7" stroke="#38bdf8" strokeWidth="1" />
+          <circle cx="20" cy="10" r="2.5" fill="#2563eb" />
+          {/* Two prongs */}
+          <path d="M12 16 V34 L15 37 L17 34 V16 Z" fill="#0284c7" stroke="#f59e0b" strokeWidth="0.8" />
+          <path d="M23 16 V34 L25 37 L28 34 V16 Z" fill="#0284c7" stroke="#f59e0b" strokeWidth="0.8" />
+        </svg>
+      );
+
+    case 'sensor_rain':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="7" y="7" width="26" height="26" rx="2" fill="#0369a1" stroke="#38bdf8" strokeWidth="1.2" />
+          {/* Interdigitated lines */}
+          <line x1="11" y1="12" x2="25" y2="12" stroke="#cbd5e1" strokeWidth="1.2" />
+          <line x1="15" y1="16" x2="29" y2="16" stroke="#cbd5e1" strokeWidth="1.2" />
+          <line x1="11" y1="20" x2="25" y2="20" stroke="#cbd5e1" strokeWidth="1.2" />
+          <line x1="15" y1="24" x2="29" y2="24" stroke="#cbd5e1" strokeWidth="1.2" />
+          <line x1="11" y1="28" x2="25" y2="28" stroke="#cbd5e1" strokeWidth="1.2" />
+        </svg>
+      );
+
+    case 'sensor_water_level':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="12" y="4" width="16" height="32" rx="2" fill="#dc2626" stroke="#ef4444" strokeWidth="1" />
+          {/* Parallel trace lines */}
+          <line x1="15" y1="14" x2="15" y2="33" stroke="#fbbf24" strokeWidth="1" />
+          <line x1="17" y1="14" x2="17" y2="33" stroke="#fbbf24" strokeWidth="1" />
+          <line x1="19" y1="14" x2="19" y2="33" stroke="#fbbf24" strokeWidth="1" />
+          <line x1="21" y1="14" x2="21" y2="33" stroke="#fbbf24" strokeWidth="1" />
+          <line x1="23" y1="14" x2="23" y2="33" stroke="#fbbf24" strokeWidth="1" />
+          <line x1="25" y1="14" x2="25" y2="33" stroke="#fbbf24" strokeWidth="1" />
+        </svg>
+      );
+
+    case 'sensor_ldr':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="20" cy="15" r="8" fill="#f97316" stroke="#ea580c" strokeWidth="1.2" />
+          <path d="M15 13 Q17 11 19 13 T23 13 T25 15 T23 17 T19 17 T17 19" fill="none" stroke="#78350f" strokeWidth="1.2" />
+          <line x1="16" y1="23" x2="14" y2="33" stroke="#b45309" strokeWidth="1.5" />
+          <line x1="24" y1="23" x2="26" y2="33" stroke="#b45309" strokeWidth="1.5" />
+        </svg>
+      );
+
+    case 'sensor_uv':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="9" y="10" width="22" height="20" rx="2" fill="#1e40af" stroke="#3b82f6" strokeWidth="1.2" />
+          <rect x="15" y="14" width="10" height="9" rx="1" fill="#0f172a" />
+          <circle cx="20" cy="18.5" r="3" fill="#60a5fa" opacity="0.8" />
+          <text x="20" y="27" fontSize="4.5" fill="#93c5fd" textAnchor="middle" fontWeight="bold">UV-A/B</text>
+        </svg>
+      );
+
+    case 'sensor_sound':
+      return (
+        <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="7" y="10" width="26" height="20" rx="2" fill="#0f172a" stroke="#334155" strokeWidth="1.2" />
+          {/* Round microphone cylinder */}
+          <circle cx="15" cy="20" r="5" fill="#94a3b8" stroke="#cbd5e1" strokeWidth="1" />
+          <circle cx="15" cy="20" r="2" fill="#18181b" />
+          {/* Potentiometer */}
+          <rect x="23" y="16" width="6" height="8" rx="1" fill="#2563eb" />
+          <circle cx="26" cy="20" r="1.5" fill="#fbbf24" />
+        </svg>
+      );
+
     default:
       return (
         <svg width={size} height={size} viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">

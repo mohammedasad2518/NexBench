@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { Link, Check } from 'lucide-react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
@@ -71,6 +72,7 @@ interface Viewport3DProps {
   snapTranslate: boolean;
   snapRotate: boolean;
   gridVisible: boolean;
+  setGridVisible?: (val: boolean) => void;
   onDeleteSelected: () => void;
   setTransformMode: (mode: TransformMode) => void;
   onDropComponent?: (type: ComponentType) => void;
@@ -133,6 +135,7 @@ export const Viewport3D = ({
   snapTranslate,
   snapRotate,
   gridVisible,
+  setGridVisible,
   onDeleteSelected,
   setTransformMode,
   onDropComponent,
@@ -172,6 +175,18 @@ export const Viewport3D = ({
   const mountHitboxesRef = useRef<THREE.Mesh[]>([]);
   const isDraggingGizmo = useRef<boolean>(false);
   const pointerDownCoord = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [viewCubeRot, setViewCubeRot] = useState({ yaw: 35, pitch: -25 });
+  const [currentTime, setCurrentTime] = useState<string>('10:33');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    };
+    updateTime();
+    const interval = setInterval(updateTime, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Phase 9B: Virtual Servo angle & Radar Sweep History refs
   const activeServoAngleRef = useRef<number>(activeServoAngle);
@@ -182,6 +197,8 @@ export const Viewport3D = ({
 
   // Phase 8A: Track configuration & Line Sensor refs
   const [internalTrackType, setInternalTrackType] = useState<TrackType>(trackType || 'oval');
+  void onTrackTypeChange;
+  void setInternalTrackType;
   const currentTrackType = trackType || internalTrackType;
   const floorTrackConfigRef = useRef<TrackConfig>({ ...DEFAULT_TRACK_CONFIG, type: currentTrackType });
   const trackMeshRef = useRef<THREE.Mesh | null>(null);
@@ -410,7 +427,7 @@ export const Viewport3D = ({
 
     // Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0a0d14);
+    scene.background = null; // Transparent scene to inherit theme background
     sceneRef.current = scene;
 
     // Wires group
@@ -440,6 +457,12 @@ export const Viewport3D = ({
     orbit.maxPolarAngle = Math.PI / 2 - 0.02;
     orbit.minDistance = 2;
     orbit.maxDistance = 50;
+
+    orbit.addEventListener('change', () => {
+      const yaw = Math.round(Math.atan2(camera.position.x, camera.position.z) * (180 / Math.PI));
+      const pitch = Math.round(Math.atan2(-camera.position.y, Math.sqrt(camera.position.x * camera.position.x + camera.position.z * camera.position.z)) * (180 / Math.PI));
+      setViewCubeRot({ yaw, pitch });
+    });
     orbit.target.set(0, 0, 0);
     orbitRef.current = orbit;
 
@@ -458,19 +481,6 @@ export const Viewport3D = ({
     dirLight.shadow.bias = -0.0005;
     scene.add(dirLight);
 
-    // Ground Plane & Grid
-    const groundGeo = new THREE.PlaneGeometry(60, 60);
-    const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x090b10,
-      roughness: 0.9,
-      metalness: 0.1,
-    });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
-    ground.rotation.x = -Math.PI / 2;
-    ground.receiveShadow = true;
-    ground.position.y = -0.01;
-    scene.add(ground);
-
     // Phase 8A: High-Contrast Floor Track Surface Plane
     const trackTex = createFloorTrackTexture(currentTrackType, DEFAULT_TRACK_CONFIG.planeSizeUnits);
     const trackGeo = new THREE.PlaneGeometry(DEFAULT_TRACK_CONFIG.planeSizeUnits, DEFAULT_TRACK_CONFIG.planeSizeUnits);
@@ -487,8 +497,74 @@ export const Viewport3D = ({
     scene.add(trackMesh);
     trackMeshRef.current = trackMesh;
 
-    const gridHelper = new THREE.GridHelper(30, 30, 0x38bdf8, 0x222a3d);
-    gridHelper.position.y = 0;
+    // BenchTwin Millimeter Precision Floor Mat
+    const matCanvas = document.createElement('canvas');
+    matCanvas.width = 1024;
+    matCanvas.height = 1024;
+    const mctx = matCanvas.getContext('2d');
+    if (mctx) {
+      mctx.fillStyle = '#cbd5e1';
+      mctx.fillRect(0, 0, 1024, 1024);
+      mctx.fillStyle = '#e2e8f0';
+      mctx.fillRect(6, 6, 1012, 1012);
+
+      // Fine millimeter subdivisions (every 16px)
+      mctx.strokeStyle = 'rgba(203, 213, 225, 0.75)';
+      mctx.lineWidth = 1;
+      for (let x = 6; x <= 1018; x += 16) {
+        mctx.beginPath();
+        mctx.moveTo(x, 6);
+        mctx.lineTo(x, 1018);
+        mctx.stroke();
+      }
+      for (let y = 6; y <= 1018; y += 16) {
+        mctx.beginPath();
+        mctx.moveTo(6, y);
+        mctx.lineTo(1018, y);
+        mctx.stroke();
+      }
+
+      // Major grid lines (every 80px)
+      mctx.strokeStyle = 'rgba(148, 163, 184, 0.7)';
+      mctx.lineWidth = 1.5;
+      for (let x = 6; x <= 1018; x += 80) {
+        mctx.beginPath();
+        mctx.moveTo(x, 6);
+        mctx.lineTo(x, 1018);
+        mctx.stroke();
+      }
+      for (let y = 6; y <= 1018; y += 80) {
+        mctx.beginPath();
+        mctx.moveTo(6, y);
+        mctx.lineTo(1018, y);
+        mctx.stroke();
+      }
+
+      // Watermark text at bottom right
+      mctx.fillStyle = 'rgba(148, 163, 184, 0.8)';
+      mctx.font = '600 16px Inter, sans-serif';
+      mctx.textAlign = 'right';
+      mctx.fillText('NEXBENCH · MILLIMETERS', 1000, 1004);
+    }
+
+    const matTexture = new THREE.CanvasTexture(matCanvas);
+    matTexture.wrapS = THREE.ClampToEdgeWrapping;
+    matTexture.wrapT = THREE.ClampToEdgeWrapping;
+
+    const groundGeo = new THREE.PlaneGeometry(36, 36);
+    const groundMat = new THREE.MeshStandardMaterial({
+      map: matTexture,
+      roughness: 0.85,
+      metalness: 0.1,
+    });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.receiveShadow = true;
+    ground.position.y = -0.005;
+    scene.add(ground);
+
+    const gridHelper = new THREE.GridHelper(30, 30, 0x0284c7, 0xcfd8dc);
+    gridHelper.position.y = 0.001;
     scene.add(gridHelper);
     gridHelperRef.current = gridHelper;
 
@@ -1387,7 +1463,7 @@ export const Viewport3D = ({
   ]);
 
   // Camera Presets
-  const setCameraView = (view: 'perspective' | 'top' | 'front' | 'side' | 'iso') => {
+  const setCameraView = (view: 'perspective' | 'top' | 'front' | 'side' | 'iso' | 'fit') => {
     const camera = cameraRef.current;
     const orbit = orbitRef.current;
     if (!camera || !orbit) return;
@@ -1409,9 +1485,22 @@ export const Viewport3D = ({
       case 'iso':
         camera.position.set(10, 8, 10);
         break;
+      case 'fit':
+        camera.position.set(8, 7, 9);
+        break;
     }
     orbit.update();
   };
+
+  const handleZoom = (factor: number) => {
+    const camera = cameraRef.current;
+    const orbit = orbitRef.current;
+    if (!camera || !orbit) return;
+    camera.position.multiplyScalar(factor);
+    orbit.update();
+  };
+
+  const selectedCompName = components.find((c) => c.id === selectedId)?.name;
 
   return (
     <div 
@@ -1429,50 +1518,37 @@ export const Viewport3D = ({
         }
       }}
     >
-      {/* Top Left Camera View Presets HUD */}
-      <div className="viewport-overlay-controls">
-        <button className="view-preset-btn" onClick={() => setCameraView('perspective')}>
-          3D Perspective
-        </button>
-        <button className="view-preset-btn" onClick={() => setCameraView('top')}>
-          Top (Y)
-        </button>
-        <button className="view-preset-btn" onClick={() => setCameraView('front')}>
-          Front (Z)
-        </button>
-        <button className="view-preset-btn" onClick={() => setCameraView('side')}>
-          Side (X)
-        </button>
-        <button className="view-preset-btn" onClick={() => setCameraView('iso')}>
-          Isometric
-        </button>
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', marginLeft: '6px' }}>
-          <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>Track:</span>
-          <select
-            id="track-surface-select"
-            value={currentTrackType}
-            onChange={(e) => {
-              const val = e.target.value as TrackType;
-              setInternalTrackType(val);
-              if (onTrackTypeChange) onTrackTypeChange(val);
-            }}
-            style={{
-              background: 'rgba(15, 23, 42, 0.85)',
-              border: '1px solid rgba(56, 189, 248, 0.4)',
-              color: '#38bdf8',
-              borderRadius: '4px',
-              padding: '2px 6px',
-              fontSize: '10.5px',
-              cursor: 'pointer',
-              fontWeight: 600,
-              outline: 'none',
-            }}
-          >
-            <option value="oval">Oval Loop</option>
-            <option value="straight">Straight Track</option>
-            <option value="wavy">Wavy S-Curve</option>
-            <option value="none">None (Plain Floor)</option>
-          </select>
+      {/* Top Left Bench Twin Bar */}
+      <div className="bt-viewport-top-left">
+        <div className="bt-hud-pill">
+          <Link size={12} className="bt-pill-icon" />
+          <span>3D bench</span>
+        </div>
+        <div className="bt-hud-pill">
+          <span className="bt-pill-label">Browser</span>
+          <span className="bt-pill-counter">{components.length} items &gt;</span>
+        </div>
+      </div>
+
+      {/* Top Right Bench Twin ViewCube */}
+      <div className="bt-viewcube-widget">
+        <div 
+          className="bt-viewcube-box"
+          style={{
+            transform: `rotateX(${viewCubeRot.pitch}deg) rotateY(${viewCubeRot.yaw}deg)`,
+          }}
+        >
+          <div className="bt-cube-face bt-face-top" onClick={() => setCameraView('top')}>TOP</div>
+          <div className="bt-cube-face bt-face-front" onClick={() => setCameraView('front')}>FRONT</div>
+          <div className="bt-cube-face bt-face-right" onClick={() => setCameraView('side')}>RIGHT</div>
+          <div className="bt-cube-face bt-face-back" onClick={() => setCameraView('side')}>BACK</div>
+          <div className="bt-cube-face bt-face-left" onClick={() => setCameraView('side')}>LEFT</div>
+          <div className="bt-cube-face bt-face-bottom" onClick={() => setCameraView('top')}>BOTTOM</div>
+        </div>
+        <div className="bt-viewcube-axes">
+          <span className="axis-dot axis-x" onClick={() => setCameraView('side')}>X</span>
+          <span className="axis-dot axis-y" onClick={() => setCameraView('top')}>Y</span>
+          <span className="axis-dot axis-z" onClick={() => setCameraView('front')}>Z</span>
         </div>
       </div>
 
@@ -1659,31 +1735,54 @@ export const Viewport3D = ({
         </div>
       )}
 
-      {/* Bottom HUD: Shortcuts & Hints */}
-      <div className="viewport-overlay-bottom">
-        {isSimulating ? (
-          <span style={{ color: isSimulationPaused ? '#fbbf24' : '#34d399' }}>
-            ⚡ <strong>Physics Simulation (Rapier 3D):</strong> {isSimulationPaused ? 'Paused' : 'Running with gravity & joints'}
-          </span>
-        ) : isAssemblyMode ? (
-          <span style={{ color: '#38bdf8' }}>
-            🔧 <strong>Mechanical Assembly Mode:</strong> Click a highlighted mount point to attach component.
-          </span>
-        ) : isWiringMode ? (
-          <span style={{ color: '#38bdf8' }}>
-            ⚡ <strong>Wiring Mode Active:</strong> Click a terminal to connect. Press <kbd>[Esc]</kbd> to cancel.
-          </span>
-        ) : (
-          <>
-            <span>Controls: <strong>Left-Drag</strong> Orbit</span>
-            <span>•</span>
-            <span><strong>Right-Drag</strong> Pan</span>
-            <span>•</span>
-            <span><strong>Scroll</strong> Zoom</span>
-            <span>•</span>
-            <span>Hotkeys: <kbd>[W]</kbd> Move <kbd>[E]</kbd> Rotate <kbd>[R]</kbd> Scale <kbd>[C]</kbd> Wire <kbd>[Del]</kbd> Delete</span>
-          </>
-        )}
+      {/* Floating Camera Controls Bar (BenchTwin Pill) */}
+      <div className="bt-floating-camera-bar">
+        <button className="bt-cam-pill-btn" onClick={() => setCameraView('iso')} title="Isometric View">
+          <span>⬡ Iso</span>
+        </button>
+        <button className="bt-cam-pill-btn" onClick={() => setCameraView('top')} title="Top View">
+          <span>⬜ Top</span>
+        </button>
+        <button className="bt-cam-pill-btn" onClick={() => setCameraView('front')} title="Front View">
+          <span>⬜ Front</span>
+        </button>
+        <button className="bt-cam-pill-btn" onClick={() => setCameraView('side')} title="Right View">
+          <span>⬜ Right</span>
+        </button>
+        <button className="bt-cam-pill-btn" onClick={() => setCameraView('fit')} title="Fit to View">
+          <span>⛶ Fit</span>
+        </button>
+        <button className="bt-cam-pill-btn" onClick={() => setGridVisible?.(!gridVisible)} title="Toggle Grid Mat">
+          <span>Mat</span>
+        </button>
+        <button className="bt-cam-pill-btn" onClick={() => handleZoom(1.2)} title="Zoom Out">
+          <span>−</span>
+        </button>
+        <button className="bt-cam-pill-btn" onClick={() => handleZoom(0.8)} title="Zoom In">
+          <span>+</span>
+        </button>
+      </div>
+
+      {/* BenchTwin Bottom Status Bar */}
+      <div className="bt-bottom-status-bar">
+        <span className="bt-status-cell">Units <strong>mm</strong></span>
+        <span className="bt-status-sep">|</span>
+        <span className="bt-status-cell">Snap <strong>{snapTranslate ? '1' : '0'}</strong></span>
+        <span className="bt-status-sep">|</span>
+        <span className="bt-status-cell">Turn <strong>{snapRotate ? '15°' : 'Free'}</strong></span>
+        <span className="bt-status-sep">|</span>
+        <span className="bt-status-cell">X - Y -</span>
+        <span className="bt-status-sep">|</span>
+        <span className="bt-status-cell">Parts <strong>{components.length}</strong></span>
+        <span className="bt-status-sep">|</span>
+        <span className="bt-status-cell text-selection">{selectedCompName || 'Nothing selected'}</span>
+        <span className="bt-status-sep">|</span>
+        <span className="bt-status-cell">{currentTime}</span>
+        <span className="bt-status-sep">|</span>
+        <span className="bt-status-cell status-ok">
+          <Check size={13} />
+          <span>No problems</span>
+        </span>
       </div>
     </div>
   );

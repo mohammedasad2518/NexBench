@@ -8,6 +8,7 @@ import type { Vector3D, TerminalCategory, ComponentType } from '../types/workben
 export type HardwareCategory = 
   | 'development_boards'
   | 'basic_electronics'
+  | 'environmental_sensors'
   | 'prototyping'
   | 'wires_cables'
   | 'connectors_accessories'
@@ -37,6 +38,13 @@ export type HardwareSubcategory =
   | 'Switches'
   | 'Protection'
   | 'Integrated Circuits'
+  // Phase 3 Environmental & Measurement Sensors
+  | 'Temperature & Humidity'
+  | 'Pressure & Weather'
+  | 'Gas & Air Quality'
+  | 'Soil & Water'
+  | 'Light & UV'
+  | 'Sound Sensors'
   // Breadboards & Prototyping
   | 'Solderless Breadboards'
   | 'Perfboards & Stripboards'
@@ -227,6 +235,19 @@ export interface ICCharacteristics {
   isConfigurable?: boolean;
 }
 
+/** Environmental & Measurement Sensor Specific Characteristics */
+export interface SensorCharacteristics {
+  sensorFamily: 'temperature' | 'pressure' | 'gas' | 'soil_water' | 'light_uv' | 'sound';
+  measuredQuantity: string;
+  unit: string;
+  minRange: number;
+  maxRange: number;
+  accuracy?: string;
+  responseProtocol: 'analog' | 'digital_io' | 'i2c' | 'one_wire';
+  defaultI2CAddress?: string;
+  hasHeater?: boolean;
+}
+
 /** Complete Structured Hardware Component Definition */
 export interface HardwareComponentDefinition {
   /** Unique component ID / catalog identifier */
@@ -287,4 +308,6 @@ export interface HardwareComponentDefinition {
   switchConfig?: SwitchCharacteristics;
   /** Integrated circuit configuration */
   icConfig?: ICCharacteristics;
+  /** Environmental and measurement sensor configuration */
+  sensorConfig?: SensorCharacteristics;
 }
